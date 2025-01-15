@@ -1,0 +1,4 @@
+"0","knitr::include_graphics(""./figs/closed_set.PNG"")"
+"2","Errore in knitr::include_graphics(""./figs/closed_set.PNG"") : 
+  Cannot find the file(s): ""./figs/closed_set.PNG""
+"

@@ -1,0 +1,1 @@
+"0","curve(dnorm(x,mean(beta.perm),sd(beta.perm)),add=TRUE,col=1,lwd=3)"

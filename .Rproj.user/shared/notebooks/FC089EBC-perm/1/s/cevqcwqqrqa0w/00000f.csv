@@ -1,0 +1,4 @@
+"0","set.seed(1)"
+"0","(res_cor=flip(Reaction.Time~Age,data=reaction,statTest = ""cor""))"
+"1","
+"

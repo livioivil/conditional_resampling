@@ -1,0 +1,3 @@
+"0","(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 10000,tail=1))"
+"1","
+"

@@ -1,0 +1,1 @@
+"0","plot(res@permP,col=""#F2AD00"",bg=""#F98400"",pch=21,main=""Joint Distribution of p-values"",asp=1)"

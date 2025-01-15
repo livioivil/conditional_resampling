@@ -1,0 +1,3 @@
+"0","data(seeds,package = ""flip"")"
+"0","seeds=na.omit(seeds)"
+"0","seeds"

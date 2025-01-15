@@ -1,0 +1,8 @@
+"0","fisher.test(seeds$grp,seeds$Germinated)$p.value"
+"1","[1]"
+"1"," 0.1551874"
+"1","
+"
+"0","(flip(Germinated~grp,data=seeds,perms=10000))"
+"1","
+"

@@ -1,0 +1,6 @@
+"0","data(""seeds"")"
+"0","seeds=na.omit(seeds)"
+"0",""
+"0","(res=flip(y~grp,data=seeds,perms = 10000))"
+"1","
+"

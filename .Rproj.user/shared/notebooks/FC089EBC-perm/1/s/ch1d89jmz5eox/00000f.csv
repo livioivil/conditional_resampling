@@ -1,0 +1,5 @@
+"0","library(flip)"
+"0","res=flip(.~grp,data=seeds,flipReturn =list(permP=TRUE,permT=TRUE))"
+"0","hist(res)"
+"2","Errore in plot.new() : figure margins too large
+"

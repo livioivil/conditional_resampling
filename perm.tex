@@ -5,16 +5,19 @@
 \documentclass[
 ]{article}
 \usepackage{amsmath,amssymb}
-\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -33,14 +36,6 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\hypersetup{
-  pdftitle={Permutation Tests},
-  pdfauthor={Livio Finos},
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=1in]{geometry}
 \usepackage{color}
 \usepackage{fancyvrb}
@@ -53,13 +48,13 @@
 \newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
 \newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
 \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
 \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
 \newcommand{\BuiltInTok}[1]{#1}
 \newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
 \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
 \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
 \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
 \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
@@ -67,7 +62,7 @@
 \newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
 \newcommand{\ExtensionTok}[1]{#1}
 \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
 \newcommand{\ImportTok}[1]{#1}
 \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
@@ -76,7 +71,7 @@
 \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
 \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
 \newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
 \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
@@ -102,6 +97,14 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Permutation Tests},
+  pdfauthor={Livio Finos},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
 
 \title{Permutation Tests}
 \author{Livio Finos}
@@ -114,11 +117,9 @@
 \setcounter{tocdepth}{2}
 \tableofcontents
 }
-\hypertarget{introduction}{%
-\section{Introduction}\label{introduction}}
+\section{Introduction}\label{introduction}
 
-\hypertarget{introduction-1}{%
-\subsection{Introduction}\label{introduction-1}}
+\subsection{Introduction}\label{introduction-1}
 
 \begin{itemize}
 \tightlist
@@ -150,9 +151,8 @@
   of a computer.
 \end{itemize}
 
-\hypertarget{renewed-interest-toward-permutation-testing}{%
 \subsection{Renewed interest toward permutation
-testing}\label{renewed-interest-toward-permutation-testing}}
+testing}\label{renewed-interest-toward-permutation-testing}
 
 \begin{itemize}
 \tightlist
@@ -176,9 +176,8 @@ testing}\label{renewed-interest-toward-permutation-testing}}
   \end{itemize}
 \end{itemize}
 
-\hypertarget{the-package-flip}{%
 \subsection{\texorpdfstring{The package
-\texttt{flip}}{The package flip}}\label{the-package-flip}}
+\texttt{flip}}{The package flip}}\label{the-package-flip}
 
 It is on CRAN and on github (\url{https://github.com/livioivil/flip})
 
@@ -210,9 +209,8 @@ To install the github version type (in R):
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{the-age-vs-reaction-time-dataset}{%
 \subsection{The Age vs Reaction Time
-Dataset}\label{the-age-vs-reaction-time-dataset}}
+Dataset}\label{the-age-vs-reaction-time-dataset}
 
 The reaction time of these subjects was tested by having them grab a
 meter stick after it was released by the tester. The number of
@@ -230,10 +228,19 @@ To read the data
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{data}\NormalTok{(reaction,}\AttributeTok{package =} \StringTok{"flip"}\NormalTok{)}
-\CommentTok{\# or download it from: https://github.com/livioivil/flip/tree/master/data}
-\CommentTok{\# str (reaction)}
+\DocumentationTok{\#\# or download it from: https://github.com/livioivil/flip/tree/master/data}
+\DocumentationTok{\#\# or }
+\CommentTok{\#load("reaction.rda")}
+ \FunctionTok{str}\NormalTok{ (reaction)}
 \end{Highlighting}
 \end{Shaded}
+
+\begin{verbatim}
+## Classes 'tbl_df', 'tbl' and 'data.frame':    10 obs. of  3 variables:
+##  $ Age          : num  70 50 30 60 80 60 30 30 20 50
+##  $ Gender       : Factor w/ 2 levels "F","M": 1 1 2 1 2 1 2 2 1 2
+##  $ Reaction.Time: num  28.7 20.4 11.6 22.3 26.5 ...
+\end{verbatim}
 
 We plot the data
 
@@ -245,9 +252,8 @@ We plot the data
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-4-1} \end{center}
 
-\hypertarget{measuring-the-dependence-between-two-variables}{%
 \subsection{Measuring the dependence between two
-variables}\label{measuring-the-dependence-between-two-variables}}
+variables}\label{measuring-the-dependence-between-two-variables}
 
 we define:
 
@@ -262,8 +268,7 @@ we define:
 We review some famous index to measure the (linear) dependence among two
 variables
 
-\hypertarget{covariance-and-variance}{%
-\subsubsection{Covariance and Variance}\label{covariance-and-variance}}
+\subsubsection{Covariance and Variance}\label{covariance-and-variance}
 
 \textbf{Covariance} between \(X\) and \(Y\):
 
@@ -289,8 +294,7 @@ variables
 
 \(\sigma_{xx}=\sqrt{\sigma_{xx}}=\sigma_{x}\)
 
-\hypertarget{correlation}{%
-\subsubsection{Correlation}\label{correlation}}
+\subsubsection{Correlation}\label{correlation}
 
 With the Covariance it is difficult to understand when the relationship
 between \(X\) and \(Y\) is strong/weak. We note that
@@ -301,7 +305,8 @@ is quivalent to
 
 \textbf{Correlation} between \(X\) and \(Y\):
 
-\(\rho_{xy}=\frac{\sigma{xy}}{\sigma_{x} \sigma_{y}} = \frac{\sum_{i=1} ^ n (x_i- \bar{x}) (y_i- \bar{y})}{\sqrt{\sum_{i=1} ^ n (x_i- \bar{ x}) ^ 2} \sqrt{\sum_{i=1} ^ n (y_i- \bar{y}) ^ 2}}\)
+\(\rho_{xy}=\frac{\sigma{xy}}{\sigma_{x} \sigma_{y}} =
+\frac{\sum_{i=1} ^ n (x_i- \bar{x}) (y_i- \bar{y})}{\sqrt{\sum_{i=1} ^ n (x_i- \bar{ x}) ^ 2} \sqrt{\sum_{i=1} ^ n (y_i- \bar{y}) ^ 2}}\)
 
 \begin{itemize}
 \tightlist
@@ -315,9 +320,8 @@ is quivalent to
   dependency between \(X\) and \(Y\)
 \end{itemize}
 
-\hypertarget{linear-trend-the-least-squares-method}{%
 \subsubsection{Linear Trend, the least squares
-method}\label{linear-trend-the-least-squares-method}}
+method}\label{linear-trend-the-least-squares-method}
 
 We describe the relationship between\\
 \texttt{Reaction.Time} and \texttt{Age} with a straight line.
@@ -382,12 +386,10 @@ A graphical representation:
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-7-1} \end{center}
 
-\hypertarget{permutation-approach-to-hypothesis-testing}{%
 \section{Permutation approach to Hypothesis
-Testing}\label{permutation-approach-to-hypothesis-testing}}
+Testing}\label{permutation-approach-to-hypothesis-testing}
 
-\hypertarget{some-remarks}{%
-\subsubsection{Some remarks}\label{some-remarks}}
+\subsubsection{Some remarks}\label{some-remarks}
 
 Let's note that all the measures above does not make any assumptions on
 the random process that generate them.
@@ -418,9 +420,8 @@ Otherwise, is the difference from 0 due to the random sampling?
 Other possible specifications of \(H_1: \ \beta_1< 0\) and, more
 commonly, \(H_1: \ \beta_1 \neq 0\).
 
-\hypertarget{permutation-tests---in-a-nutshell}{%
 \subsection{Permutation tests - in a
-nutshell}\label{permutation-tests---in-a-nutshell}}
+nutshell}\label{permutation-tests---in-a-nutshell}
 
 As a toy example, let use a sub-set of the data:
 
@@ -455,13 +456,11 @@ assumption here is the exchangeability of the observations: the joint
 density \(f(y_1,\ldots,y_n)\) does not change when the ordering of
 \(y_1,\ldots,y_n\) is changed.
 
-\hypertarget{all-potential-datasets}{%
-\subsubsection{All potential datasets}\label{all-potential-datasets}}
+\subsubsection{All potential datasets}\label{all-potential-datasets}
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-9-1} \end{center}
 
-\hypertarget{in-our-data-set}{%
-\paragraph{In our data set}\label{in-our-data-set}}
+\paragraph{In our data set}\label{in-our-data-set}
 
 We apply the same principle to the complete dataset\ldots{}
 
@@ -501,9 +500,8 @@ We repeat \ensuremath{10^{4}} times and we look at the histogram of the
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-13-1} \end{center}
 
-\hypertarget{how-likely-was-hatbeta_1-obs}{%
 \subsubsection{\texorpdfstring{How likely WAS
-\(\hat{\beta}_1 ^{obs}\)?}{How likely WAS \textbackslash hat\{\textbackslash beta\}\_1 \^{}\{obs\}?}}\label{how-likely-was-hatbeta_1-obs}}
+\(\hat{\beta}_1 ^{obs}\)?}{How likely WAS \textbackslash hat\{\textbackslash beta\}\_1 \^{}\{obs\}?}}\label{how-likely-was-hatbeta_1-obs}
 
 (before the experiment!)
 
@@ -523,24 +521,22 @@ Remarks:
   evidence towards \(H_1\) than \(\hat{\beta}_1 ^{obs}\)
 \end{itemize}
 
-\hypertarget{calculation-of-the-p-value}{%
 \subsubsection{Calculation of the
-p-value}\label{calculation-of-the-p-value}}
+p-value}\label{calculation-of-the-p-value}
 
-Over B=\ensuremath{10^{4}} permutations we got 9816 times a
+Over B=\ensuremath{10^{4}} permutations we got 9844 times a
 \(\hat{\beta}_1 ^{* b} \leq \hat{\beta}_1 ^{obs}\).
 
 The p-value (significance) is
 \(p=\frac{\# (\hat{\beta}_1 ^{* b} \geq \hat{\beta}_1 ^{obs})}{B} =\)
-0.0186
+0.0158
 
 (\(\hat{\beta}_1 ^{obs}\) counts as a random permutation)
 
-\hypertarget{interpretation}{%
-\subsubsection{Interpretation}\label{interpretation}}
+\subsubsection{Interpretation}\label{interpretation}
 
 The probability of \(p=P (\hat{\beta}_1 ^ * \geq \hat{\beta}_1=\) 0.206
-\(| H_0)\) is equal to \(p =\) 0.0186, i.e.~very small.\\
+\(| H_0)\) is equal to \(p =\) 0.0158, i.e.~very small.\\
 So, it was unlikely to get a value like this \textbf{IF \(H_0\) is
 true}.
 
@@ -562,8 +558,7 @@ is true (there is a positive relationship).
   \(H_0\) (null correlation)
 \end{itemize}
 
-\hypertarget{to-sum-up}{%
-\subsection{To sum up}\label{to-sum-up}}
+\subsection{To sum up}\label{to-sum-up}
 
 \textbf{p-value}: proportion of experiments providing equal or more
 evidence against \(H_0\) with respect to observed data.
@@ -597,8 +592,7 @@ We built a machinery that in the long run (many replicates of the
 experiment) finds false correlations with probability \(\alpha\)
 (e.g.~\(0.05=5\%\)).
 
-\hypertarget{we-make-it-in-flip}{%
-\subsubsection{We make it in flip}\label{we-make-it-in-flip}}
+\subsubsection{We make it in flip}\label{we-make-it-in-flip}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -611,7 +605,7 @@ experiment) finds false correlations with probability \(\alpha\)
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633    >  0.0120
+## Reaction.Time    t 2.633    >  0.0170
 \end{verbatim}
 
 \begin{Shaded}
@@ -642,9 +636,8 @@ We built a machinery that in the long run (many replicates of the
 experiment) finds false correlations with probability \(\alpha\)
 (e.g.~\(0.05=5\%\)).
 
-\hypertarget{composite-alternatives-bilateral}{%
 \subsubsection{Composite alternatives
-(bilateral)}\label{composite-alternatives-bilateral}}
+(bilateral)}\label{composite-alternatives-bilateral}
 
 The hypothesis \(H_1: \ \beta_1 >0\) (the relation is positive) must be
 justified with a priori knowledge.
@@ -657,7 +650,7 @@ I consider anomalous coefficients estimated as very small but also very
 large (`far from 0'). The p-value is
 
 \(p=\frac{\#(|\hat{\beta}_1^{*b} | \geq|\hat{\beta}_1^{obs}|)}{B}=\)
-0.0365
+0.0339
 
 (remark: the observed test stat is included among the permuted one)
 
@@ -673,7 +666,7 @@ In \texttt{flip}:
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633   ><  0.0385
+## Reaction.Time    t 2.633   ><  0.0323
 \end{verbatim}
 
 \begin{Shaded}
@@ -684,10 +677,10 @@ In \texttt{flip}:
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-17-1} \end{center}
 
-\hypertarget{a-more-formal-approach}{%
-\subsection{A more formal approach}\label{a-more-formal-approach}}
+\subsection{A more formal approach}\label{a-more-formal-approach}
 
-(see also Pesarin, 2001; Hemerik \& Goeman, 2017)
+(see also Pesarin, 2001; {[}Hemerik \& Goeman, 2018{]}
+(link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf)
 
 Let \(Y\) be data taking values in a sample space \(\mathcal{Y}\). Let
 \(\Pi\) be a finite set of transformations
@@ -726,15 +719,27 @@ of \(T(\pi Y)\)
 Define the test: \begin{equation}
 \phi(Y) = 
 \begin{cases} 
-1 & \text{if } T(Y)\geq T^{(k)}(Y) \\
+1 & \text{if } T(Y)> T^{(k)}(Y) \\
 0 & \text{if } otherwise
 \end{cases}
 \end{equation}
 
 \textbf{Theorem}: Under \(H_0\), \(E_P(\phi(Y))=\alpha\), that is
-\(P(T(Y) \geq T^{(k)}) \leq \alpha\).
+\(P(T(Y) > T^{(k)}) \leq \alpha\).
 
-\textbf{Proof}
+\textbf{Proof}\\
+By the group structure, \(\Pi\pi = \Pi\) for all \(\pi \in \Pi\). Hence,
+\(T^{(k)}(\pi Y) = T^{(k)}(Y)\) for all \(\pi \in \Pi\). Let \(h\) have
+the uniform distribution on \(\Pi\). Then, under \(H_p\), the rejection
+probability is \[
+P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}.
+\] The first equality follows from the null hypothesis, and the second
+equality holds since \(T^{(k)}(Y) = T^{(k)}(hY)\). Since \(h\) is
+uniform on \(\Pi\), the above probability equals \[
+\mathbb{E}\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
+\] as was to be shown.
+
+\textbf{Alternative Proof}
 
 By construction, \(\sum_{\pi\in \Pi} \phi(\pi Y)=|\Pi|\alpha\).
 Therefore
@@ -794,9 +799,9 @@ i.e.~each permutation is equally likely in the Orbit \(\mathcal{O}\).
 (due to group structure) \[
 \begin{aligned}
 &E(\phi(Y)|\mathbf{y}\in\mathcal{O}, H_0)=\\
-&P(T(\mathbf{y})\geq T^{(k)} | \mathbf{y}\in\mathcal{O}, H_0)=\\
+&P(T(\mathbf{y})> T^{(k)} | \mathbf{y}\in\mathcal{O}, H_0)=\\
 &=\int_{T^{(k)}}^{+\infty} f(T(\mathbf{y}))dT(\mathbf{y})=\\
-&=\sum_{\mathbf{y}\in\mathcal{O}} I(T(\mathbf{y})\geq T^{})/|\mathcal{O}|\leq \alpha
+&=\sum_{\mathbf{y}\in\mathcal{O}} I(T(\mathbf{y})> T^{})/|\mathcal{O}|\leq \alpha
 \ \ \ \ \forall\mathcal{O}
 \end{aligned}
 \]
@@ -804,9 +809,8 @@ i.e.~each permutation is equally likely in the Orbit \(\mathcal{O}\).
 And now
 \(E(\phi(\mathbf{y}))=\int_P E(\phi(\mathbf{y})|\mathbf{y}\in\mathcal{O}, H_0) d\mathbf{y}\)
 
-\hypertarget{properties-see-pesarin-2001}{%
 \subsubsection{Properties (see Pesarin,
-2001)}\label{properties-see-pesarin-2001}}
+2001)}\label{properties-see-pesarin-2001}
 
 The theorem above proves that the permutation tests have \textbf{exact
 control of the type I error}, i.e.~\(P(p-value\leq \alpha|H_0)=\alpha\)
@@ -831,9 +835,8 @@ Further properties:
   The test converges to the parametric counterpart (when it exists)
 \end{itemize}
 
-\hypertarget{a-comparison-and-relationships-with-parametric-linear-model}{%
 \subsection{A comparison (and relationships) with parametric linear
-model}\label{a-comparison-and-relationships-with-parametric-linear-model}}
+model}\label{a-comparison-and-relationships-with-parametric-linear-model}
 
 We can see that the histogram of the statistical tests (calculated on
 the permuted data) is well described by a \textbf{Gaussian }(normal)
@@ -849,9 +852,8 @@ curve.
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-18-1} \end{center}
 
-\hypertarget{the-simple-linear-parametric-model}{%
 \subsubsection{The (simple) linear parametric
-model}\label{the-simple-linear-parametric-model}}
+model}\label{the-simple-linear-parametric-model}
 
 We assume that the observed values are distributed around true values
 \(\beta_0 + \beta_1 X\) according to a Gaussian law:
@@ -874,8 +876,7 @@ We assume that the observed values are distributed around true values
   (homoschedasticity: same variance).
 \end{itemize}
 
-\hypertarget{hypothesis-testing}{%
-\subsubsection{Hypothesis testing}\label{hypothesis-testing}}
+\subsubsection{Hypothesis testing}\label{hypothesis-testing}
 
 If these assumptions are true,
 
@@ -920,9 +921,8 @@ alternative)
 
 Similar result, but much more assumptions!
 
-\hypertarget{assumptions-of-a-permutation-test}{%
 \subsubsection{Assumptions of a permutation
-test}\label{assumptions-of-a-permutation-test}}
+test}\label{assumptions-of-a-permutation-test}
 
 What model do we assume in a permutation test?
 
@@ -938,9 +938,8 @@ that is:\\
 No other assumptions on the distribution of \(f(y|x)\) (normality, nor
 finite moments)
 
-\hypertarget{permutationally-equivalent-tests}{%
 \subsection{Permutationally equivalent
-tests}\label{permutationally-equivalent-tests}}
+tests}\label{permutationally-equivalent-tests}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -976,8 +975,7 @@ tests}\label{permutationally-equivalent-tests}}
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-20-1} \end{center}
 
-\hypertarget{conclusion}{%
-\subsubsection{Conclusion}\label{conclusion}}
+\subsubsection{Conclusion}\label{conclusion}
 
 \textbf{The permutation tests}:
 
@@ -1021,11 +1019,9 @@ tests}\label{permutationally-equivalent-tests}}
   \end{itemize}
 \end{itemize}
 
-\hypertarget{some-special-cases}{%
-\section{Some special cases}\label{some-special-cases}}
+\section{Some special cases}\label{some-special-cases}
 
-\hypertarget{rank-correlation}{%
-\subsection{Rank-correlation}\label{rank-correlation}}
+\subsection{Rank-correlation}\label{rank-correlation}
 
 \begin{itemize}
 \tightlist
@@ -1086,7 +1082,7 @@ tests}\label{permutationally-equivalent-tests}}
 
 \begin{verbatim}
 ## Warning in cor.test.default(reaction$Reaction.Time, reaction$Age, method =
-## "spe"): Cannot compute exact p-value with ties
+## "spe"): Impossibile calcolare p-value esatti in presenza di ties
 \end{verbatim}
 
 \begin{verbatim}
@@ -1109,9 +1105,8 @@ tests}\label{permutationally-equivalent-tests}}
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-22-1} \end{center}
 
-\hypertarget{the-two-independent-sample-problem}{%
 \subsection{The Two-independent-sample
-problem}\label{the-two-independent-sample-problem}}
+problem}\label{the-two-independent-sample-problem}
 
 \begin{itemize}
 \tightlist
@@ -1209,8 +1204,7 @@ problem}\label{the-two-independent-sample-problem}}
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-24-1} \end{center}
 
-\hypertarget{rank-test}{%
-\subsubsection{Rank test}\label{rank-test}}
+\subsubsection{Rank test}\label{rank-test}
 
 Can we use rank-based statistics?
 
@@ -1236,8 +1230,8 @@ instead of asymptotic one (and we have no limitations with ties).
 \end{Shaded}
 
 \begin{verbatim}
-## Warning in wilcox.test.default(x = c(12.54, 14.81, 16.71, 7.53, 7.02, 8.09, :
-## cannot compute exact p-value with ties
+## Warning in wilcox.test.default(x = DATA[[1L]], y = DATA[[2L]], ...): non è
+## possibile calcolare p-value esatto in presenza di ties
 \end{verbatim}
 
 \begin{verbatim}
@@ -1249,9 +1243,8 @@ instead of asymptotic one (and we have no limitations with ties).
 ## alternative hypothesis: true location shift is not equal to 0
 \end{verbatim}
 
-\hypertarget{chi-square-and-other-cathegorical-methods}{%
 \subsection{Chi square and other cathegorical
-methods}\label{chi-square-and-other-cathegorical-methods}}
+methods}\label{chi-square-and-other-cathegorical-methods}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1331,8 +1324,7 @@ methods}\label{chi-square-and-other-cathegorical-methods}}
 ## GerminatedTRUE     t  1.798   ><  0.1542
 \end{verbatim}
 
-\hypertarget{anova-c-sample}{%
-\subsection{ANOVA (C-sample)}\label{anova-c-sample}}
+\subsection{ANOVA (C-sample)}\label{anova-c-sample}
 
 e.g.~3 groups of \texttt{Age}: young \([18-35)\), middle age
 \([35-60)\), old \([60-100)\)
@@ -1419,8 +1411,7 @@ e.g.~3 groups of \texttt{Age}: young \([18-35)\), middle age
 ## F-statistic:  4.02 on 2 and 7 DF,  p-value: 0.06878
 \end{verbatim}
 
-\hypertarget{stochastic-ordering}{%
-\subsubsection{Stochastic Ordering}\label{stochastic-ordering}}
+\subsubsection{Stochastic Ordering}\label{stochastic-ordering}
 
 \begin{itemize}
 \tightlist
@@ -1465,9 +1456,8 @@ e.g.~3 groups of \texttt{Age}: young \([18-35)\), middle age
 ## V1     Fisher    2 4.492  0.0210
 \end{verbatim}
 
-\hypertarget{stratified-permutations-discrete-nuisances}{%
 \subsection{Stratified permutations (discrete
-nuisances)}\label{stratified-permutations-discrete-nuisances}}
+nuisances)}\label{stratified-permutations-discrete-nuisances}
 
 What if we want to test \(x=\) \texttt{Age} also using \(z=\)
 \texttt{Gender} as nuisance in the \texttt{reaction} data set?
@@ -1526,11 +1516,9 @@ Alternative model (more about NPC later):
 ## V1     Fisher    2 3.702  0.1371
 \end{verbatim}
 
-\hypertarget{multivariate-testing}{%
-\section{Multivariate Testing}\label{multivariate-testing}}
+\section{Multivariate Testing}\label{multivariate-testing}
 
-\hypertarget{seeds-data}{%
-\subsection{Seeds data}\label{seeds-data}}
+\subsection{Seeds data}\label{seeds-data}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1582,9 +1570,8 @@ omit the \texttt{NA}s:
 ## 40   1 5.21 12.00
 \end{verbatim}
 
-\hypertarget{marginal-vs-joint-distribution}{%
 \subsection{Marginal vs Joint
-distribution}\label{marginal-vs-joint-distribution}}
+distribution}\label{marginal-vs-joint-distribution}
 
 Use a permutation methods to test if there is any difference between the
 two groups in \texttt{grp} on the two variables \texttt{x} and
@@ -1624,9 +1611,8 @@ Function) to test the global hypothesis\\
 - How to use a closed testing procedure to adjust the 2 p-values: which
 variables?.
 
-\hypertarget{rejection-regions-and-overall-testing}{%
 \subsection{Rejection regions (and overall
-testing)}\label{rejection-regions-and-overall-testing}}
+testing)}\label{rejection-regions-and-overall-testing}
 
 In the univariate setting it is easy to define what is \emph{far from
 the null hypothesis} (i.e.~usually from a value of 0 of the test
@@ -1670,9 +1656,8 @@ p-values, which looks something like this one:
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-39-1} \end{center}
 
-\hypertarget{fisher-combining-function}{%
 \subsubsection{Fisher Combining
-Function}\label{fisher-combining-function}}
+Function}\label{fisher-combining-function}
 
 We inspect the rejection regions of the two univariate tests and the one
 of Fisher combination.\\
@@ -1682,9 +1667,8 @@ testing.
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-40-1} \end{center}
 
-\hypertarget{tippett-min-p-combining-function}{%
 \subsubsection{Tippett (min-p) Combining
-Function}\label{tippett-min-p-combining-function}}
+Function}\label{tippett-min-p-combining-function}
 
 We inspect the rejection regions of the two univariate tests and the one
 of Fisher combination.\\
@@ -1695,12 +1679,10 @@ Young. Indeed, it is a closed testing with shortcut.
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-41-1} \end{center}
 
-\hypertarget{fwer-control-via-permutations-tests}{%
 \section{FWER control via Permutations
-tests}\label{fwer-control-via-permutations-tests}}
+tests}\label{fwer-control-via-permutations-tests}
 
-\hypertarget{permutation-bonferroni}{%
-\subsection{Permutation Bonferroni}\label{permutation-bonferroni}}
+\subsection{Permutation Bonferroni}\label{permutation-bonferroni}
 
 Bonferroni is conservative
 
@@ -1721,8 +1703,7 @@ Bonferroni is conservative
   By permutations
 \end{itemize}
 
-\hypertarget{improved-bonferroni}{%
-\subsection{Improved Bonferroni}\label{improved-bonferroni}}
+\subsection{Improved Bonferroni}\label{improved-bonferroni}
 
 \begin{itemize}
 \tightlist
@@ -1748,9 +1729,8 @@ Bonferroni is conservative
   Using permutations to find the distribution of the minimum p-value
 \end{itemize}
 
-\hypertarget{multiple-testing-using-permutations}{%
 \subsection{Multiple testing using
-permutations}\label{multiple-testing-using-permutations}}
+permutations}\label{multiple-testing-using-permutations}
 
 \textbf{The single step min-P method}
 
@@ -1776,9 +1756,8 @@ permutations}\label{multiple-testing-using-permutations}}
 Reject all hypotheses with (non-permuted) p-values at most
 \(\tilde\alpha\)
 
-\hypertarget{correlation-structure-of-p-values}{%
 \subsection{Correlation structure of
-p-values}\label{correlation-structure-of-p-values}}
+p-values}\label{correlation-structure-of-p-values}
 
 \textbf{Permutation}\\
 - Destroys correlation between covariates and response\\
@@ -1795,9 +1774,8 @@ account
 - Independent p-values: minimal gain\\
 - Positively correlated p-values: gain can be large
 
-\hypertarget{westfall-young-permutation-holm}{%
-\subsection{Westfall \&~Young: permutation
-Holm}\label{westfall-young-permutation-holm}}
+\subsection{Improved Holm: Westfall
+\&~Young}\label{improved-holm-westfall-young}
 
 \emph{Westfall PH, Young SS (1993) Resampling-Based Multiple Testing:
 Examples and Methods for p-Value Adjustment. Wiley}
@@ -1836,9 +1814,8 @@ Examples and Methods for p-Value Adjustment. Wiley}
   Until no new rejections occur
 \end{itemize}
 
-\hypertarget{the-general-framework-closed-testing}{%
 \subsection{The general framework: Closed
-Testing}\label{the-general-framework-closed-testing}}
+Testing}\label{the-general-framework-closed-testing}
 
 \emph{R Marcus, E Peritz, KR Gabriel (1976). On closed testing
 procedures with special reference to ordered analysis of variance.
@@ -1849,10 +1826,9 @@ Test in each node: any multivariate permutation test
 Westfall \&~Young is a special case of closed testing (i.e.~each node of
 the closure set uses min-p/Tippett or max-T combining function)
 
-\hypertarget{closure-set}{%
-\subsubsection{Closure Set}\label{closure-set}}
+\subsubsection{Closure Set}\label{closure-set}
 
-\begin{center}\includegraphics[width=9.82in]{./figs/closed_set} \end{center}
+\begin{center}\includegraphics{./figs/closed_set} \end{center}
 
 Adjusted \(\tilde p_A=\max(p_A,p_{AB},p_{AC},p_{ABC})\)
 
@@ -1884,8 +1860,7 @@ In our data:
 ## y    t 2.061   ><  0.0540        0.0880      0.0750
 \end{verbatim}
 
-\hypertarget{conclusion-1}{%
-\subsection{Conclusion}\label{conclusion-1}}
+\subsection{Conclusion}\label{conclusion-1}
 
 \textbf{Accounting for dependencies}
 
@@ -1904,9 +1879,8 @@ then permutations are (often) convenient
 
 \textbf{How?} \texttt{R:\ library(flip);\ flip();\ flip.adjust()}
 
-\hypertarget{a-case-study-pharmacokinetic-study-of-carbidopa}{%
 \section{A case study: Pharmacokinetic Study of
-Carbidopa}\label{a-case-study-pharmacokinetic-study-of-carbidopa}}
+Carbidopa}\label{a-case-study-pharmacokinetic-study-of-carbidopa}
 
 Description:\\
 \url{http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/part2-table6.html}
@@ -1938,8 +1912,7 @@ Research questions:
   for each endpoint, then discuss the results)
 \end{itemize}
 
-\hypertarget{a-solution}{%
-\subsection{A solution}\label{a-solution}}
+\subsection{A solution}\label{a-solution}
 
 We answer to both first and second question with a single analysis: we
 perform a linear model (accounting for individual variability) on log
@@ -2140,8 +2113,7 @@ There is an effect of \texttt{Dose}, overall.
 \texttt{AUC} and \texttt{Cmax} show a significant effect after
 correction for multiplicity, while \texttt{Tmax} does not.
 
-\hypertarget{minimal-bibliography}{%
-\section{(minimal) Bibliography}\label{minimal-bibliography}}
+\section{(minimal) Bibliography}\label{minimal-bibliography}
 
 The Grounding Theory:\\
 - Pesarin (2001) Multivariate Permutation Tests: With Applications in

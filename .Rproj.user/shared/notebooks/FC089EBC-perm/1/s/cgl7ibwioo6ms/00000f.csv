@@ -1,0 +1,3 @@
+"0","(res=flip(Reaction.Time~Age,data=reaction,perms = 10000,statTest  = ""rank""))"
+"1","
+"

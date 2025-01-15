@@ -1,0 +1,4 @@
+"0","# to see the rank correlation use the workaround:"
+"0","(res=flip(rank(reaction$Reaction.Time)~rank(reaction$Age),perms = 10000,statTest  = ""cor""))"
+"1","
+"

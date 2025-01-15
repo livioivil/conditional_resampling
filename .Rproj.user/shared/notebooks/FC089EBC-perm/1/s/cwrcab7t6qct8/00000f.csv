@@ -1,0 +1,4 @@
+"0",""
+"0","par(mfrow=c(2,3))"
+"0","for(i in 1:6)"
+"0","  make_perm_plot()"

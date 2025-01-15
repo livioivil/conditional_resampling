@@ -1,0 +1,3 @@
+"0","res.fisher=npc(res,""Fisher"",flipReturn=list(permP=TRUE,permT=TRUE))"
+"0","Falpha5=res.fisher@permT[which.min(abs(res.fisher@permP-.05))]"
+"0","plot(res@permP[,1],res@permP[,2],col=""#F2AD00"",bg=""#F98400"",pch=21,main=""Alpha .05"",asp=1)"

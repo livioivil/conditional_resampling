@@ -1,0 +1,3 @@
+"0","(res=flip(Reaction.Time~Age,Strata=~Gender,data=reaction,perms=10000))"
+"1","
+"

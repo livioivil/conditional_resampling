@@ -1,0 +1,5 @@
+"0","reaction$AgeCateg=cut(reaction$Age,c(18,35,65,100),right = FALSE)"
+"0","  "
+"0","(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 10000,statTest  = ""ANOVA""))"
+"1","
+"

@@ -1,0 +1,5 @@
+"0","library(flip)"
+"0",""
+"0","(res=flip(Reaction.Time~Age,data=reaction,tail=1))"
+"1","
+"

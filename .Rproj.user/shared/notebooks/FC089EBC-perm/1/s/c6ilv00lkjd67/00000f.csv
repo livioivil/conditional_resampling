@@ -1,0 +1,5 @@
+"0",""
+"0","#the observed dataset is one of the possible permutations"
+"0","beta.perm=c(beta1,beta.perm)"
+"0","# str(beta.perm)"
+"0","hist(beta.perm,50)"

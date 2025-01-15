@@ -1,0 +1,7 @@
+"0","library(devtools)"
+"0","install_github('livioivil/flip')"
+"2","Using GitHub PAT from the git credential store.
+"
+"2","Skipping install of 'flip' from a github remote, the SHA1 (cf605988) has not changed since last install.
+  Use `force = TRUE` to force installation
+"
