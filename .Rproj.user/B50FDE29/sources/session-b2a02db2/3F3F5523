@@ -3,7 +3,7 @@
     "path": "~/github/conditional_resampling/perm_notes.Rmd",
     "project_path": "perm_notes.Rmd",
     "type": "r_markdown",
-    "hash": "2506060145",
+    "hash": "824123550",
     "contents": "",
     "dirty": false,
     "created": 1737048610195.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "130,67",
-        "scrollLine": "122"
+        "cursorPosition": "1,23",
+        "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1737048648,
+    "lastKnownWriteTime": 1737048923,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1737048648552,
+    "last_content_update": 1737048923329,
     "read_only": false,
     "read_only_alternatives": []
 }

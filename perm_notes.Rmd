@@ -1,5 +1,5 @@
 ---
-title: "Conditional Inference for Repeated Measures models"
+title: "Inference via conditional-resampling methods"
 author: "Livio Finos"
 output: 
   html_document:
