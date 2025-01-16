@@ -196,7 +196,7 @@ $y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)=y_i- \hat{y}_i$
 
 
 and therefore the least squares are the sum of the squared residuals:
-$\sum_{i=1} ^ n (y_i- \hat{\beta}_0 + \hat{\beta}_1x_i) ^ 2=\sum_{i=1} ^ n (y_i- \hat{y}_i ) ^ 2$
+$\sum_{i=1} ^ n (y_i- \hat{\beta}_0 - \hat{\beta}_1x_i) ^ 2=\sum_{i=1} ^ n (y_i- \hat{y}_i ) ^ 2$
 
 <!-- --- -->
 
@@ -505,11 +505,11 @@ library(flip)
 plot(res)
 ```
 
-## A more formal approach
+## A slightly more formal approach
 
-(see also Pesarin, 2001; [Hemerik \& Goeman, 2018] (link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf)
+(see also Pesarin, 2001; [Hemerik \& Goeman, 2018](link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf) )
 
-Let $Y$ be data taking values in a sample space $\mathcal{Y}$. Let $\Pi$ be a finite set of transformations
+Let $Y$ be data taking values in a sample space $\mathcal{Y}$. Let $\Pi$ be a -- usually finite -- set of transformations
 $\pi : \mathcal{Y} \rightarrow \mathcal{Y}$, such that $\Pi$ is a **group** with respect to the operation of composition of
 transformations, that is:   
 
@@ -520,7 +520,7 @@ transformations, that is:
 (e.g. $\Pi$ set of all possible permutations)
 
 **Null Hypothesis**  
-$H_0:$ $Y\in \Omega_0$
+$H_0:$ $Y\sim P\in \Omega_0$
 
 **Randomization Hypothesis**  Under the null hypothesis,
 the distribution of $Y$ is invariant under the transformations in $\Pi$; that is, for
@@ -549,13 +549,13 @@ Define the test:
 **Theorem**: Under $H_0$, $E_P(\phi(Y))=\alpha$, that is $P(T(Y) > T^{(k)}) \leq \alpha$.
 
 **Proof**  
-By the group structure, $\Pi\pi = \Pi$ for all $\pi \in \Pi$. Hence, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Let $h$ have the uniform distribution on $\Pi$. Then, under $H_p$, the rejection probability is
+By the group structure, $\pi\Pi = \Pi$ for all $\pi \in \Pi$. Hence, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Let $h$ have the uniform distribution on $\Pi$. Then, under $H_p$, the rejection probability is
 $$
 P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}.
 $$
 The first equality follows from the null hypothesis, and the second equality holds since $T^{(k)}(Y) = T^{(k)}(hY)$. Since $h$ is uniform on $\Pi$, the above probability equals
 $$
-\mathbb{E}\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
+\mathbb{E}_P\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
 $$
 as was to be shown.
 

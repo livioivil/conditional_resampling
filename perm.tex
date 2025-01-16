@@ -359,7 +359,7 @@ Estimates:
 \end{itemize}
 
 and therefore the least squares are the sum of the squared residuals:
-\(\sum_{i=1} ^ n (y_i- \hat{\beta}_0 + \hat{\beta}_1x_i) ^ 2=\sum_{i=1} ^ n (y_i- \hat{y}_i ) ^ 2\)
+\(\sum_{i=1} ^ n (y_i- \hat{\beta}_0 - \hat{\beta}_1x_i) ^ 2=\sum_{i=1} ^ n (y_i- \hat{y}_i ) ^ 2\)
 
 A graphical representation:
 
@@ -524,19 +524,19 @@ Remarks:
 \subsubsection{Calculation of the
 p-value}\label{calculation-of-the-p-value}
 
-Over B=\ensuremath{10^{4}} permutations we got 9844 times a
+Over B=\ensuremath{10^{4}} permutations we got 9849 times a
 \(\hat{\beta}_1 ^{* b} \leq \hat{\beta}_1 ^{obs}\).
 
 The p-value (significance) is
 \(p=\frac{\# (\hat{\beta}_1 ^{* b} \geq \hat{\beta}_1 ^{obs})}{B} =\)
-0.0158
+0.0153
 
 (\(\hat{\beta}_1 ^{obs}\) counts as a random permutation)
 
 \subsubsection{Interpretation}\label{interpretation}
 
 The probability of \(p=P (\hat{\beta}_1 ^ * \geq \hat{\beta}_1=\) 0.206
-\(| H_0)\) is equal to \(p =\) 0.0158, i.e.~very small.\\
+\(| H_0)\) is equal to \(p =\) 0.0153, i.e.~very small.\\
 So, it was unlikely to get a value like this \textbf{IF \(H_0\) is
 true}.
 
@@ -605,7 +605,7 @@ experiment) finds false correlations with probability \(\alpha\)
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633    >  0.0170
+## Reaction.Time    t 2.633    >  0.0150
 \end{verbatim}
 
 \begin{Shaded}
@@ -650,7 +650,7 @@ I consider anomalous coefficients estimated as very small but also very
 large (`far from 0'). The p-value is
 
 \(p=\frac{\#(|\hat{\beta}_1^{*b} | \geq|\hat{\beta}_1^{obs}|)}{B}=\)
-0.0339
+0.0331
 
 (remark: the observed test stat is included among the permuted one)
 
@@ -666,7 +666,7 @@ In \texttt{flip}:
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633   ><  0.0323
+## Reaction.Time    t 2.633   ><  0.0339
 \end{verbatim}
 
 \begin{Shaded}
@@ -677,13 +677,15 @@ In \texttt{flip}:
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-17-1} \end{center}
 
-\subsection{A more formal approach}\label{a-more-formal-approach}
+\subsection{A slightly more formal
+approach}\label{a-slightly-more-formal-approach}
 
-(see also Pesarin, 2001; {[}Hemerik \& Goeman, 2018{]}
-(link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf)
+(see also Pesarin, 2001;
+\href{link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf}{Hemerik
+\& Goeman, 2018} )
 
 Let \(Y\) be data taking values in a sample space \(\mathcal{Y}\). Let
-\(\Pi\) be a finite set of transformations
+\(\Pi\) be a -- usually finite -- set of transformations
 \(\pi : \mathcal{Y} \rightarrow \mathcal{Y}\), such that \(\Pi\) is a
 \textbf{group} with respect to the operation of composition of
 transformations, that is:
@@ -701,7 +703,7 @@ transformations, that is:
 (e.g.~\(\Pi\) set of all possible permutations)
 
 \textbf{Null Hypothesis}\\
-\(H_0:\) \(Y\in \Omega_0\)
+\(H_0:\) \(Y\sim P\in \Omega_0\)
 
 \textbf{Randomization Hypothesis} Under the null hypothesis, the
 distribution of \(Y\) is invariant under the transformations in \(\Pi\);
@@ -728,7 +730,7 @@ Define the test: \begin{equation}
 \(P(T(Y) > T^{(k)}) \leq \alpha\).
 
 \textbf{Proof}\\
-By the group structure, \(\Pi\pi = \Pi\) for all \(\pi \in \Pi\). Hence,
+By the group structure, \(\pi\Pi = \Pi\) for all \(\pi \in \Pi\). Hence,
 \(T^{(k)}(\pi Y) = T^{(k)}(Y)\) for all \(\pi \in \Pi\). Let \(h\) have
 the uniform distribution on \(\Pi\). Then, under \(H_p\), the rejection
 probability is \[
@@ -736,7 +738,7 @@ P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}.
 \] The first equality follows from the null hypothesis, and the second
 equality holds since \(T^{(k)}(Y) = T^{(k)}(hY)\). Since \(h\) is
 uniform on \(\Pi\), the above probability equals \[
-\mathbb{E}\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
+\mathbb{E}_P\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
 \] as was to be shown.
 
 \textbf{Alternative Proof}
