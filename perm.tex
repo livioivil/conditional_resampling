@@ -479,7 +479,7 @@ here some example
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-10-1} \end{center}
 
-We repeat \ensuremath{10^{4}} times and we look at the histogram of the
+We repeat 5000 times and we look at the histogram of the
 \(\hat{\beta}_1\)
 
 \begin{Shaded}
@@ -524,19 +524,19 @@ Remarks:
 \subsubsection{Calculation of the
 p-value}\label{calculation-of-the-p-value}
 
-Over B=\ensuremath{10^{4}} permutations we got 9849 times a
+Over B=5000 permutations we got 4939 times a
 \(\hat{\beta}_1 ^{* b} \leq \hat{\beta}_1 ^{obs}\).
 
 The p-value (significance) is
 \(p=\frac{\# (\hat{\beta}_1 ^{* b} \geq \hat{\beta}_1 ^{obs})}{B} =\)
-0.0153
+0.0126
 
 (\(\hat{\beta}_1 ^{obs}\) counts as a random permutation)
 
 \subsubsection{Interpretation}\label{interpretation}
 
 The probability of \(p=P (\hat{\beta}_1 ^ * \geq \hat{\beta}_1=\) 0.206
-\(| H_0)\) is equal to \(p =\) 0.0153, i.e.~very small.\\
+\(| H_0)\) is equal to \(p =\) 0.0126, i.e.~very small.\\
 So, it was unlikely to get a value like this \textbf{IF \(H_0\) is
 true}.
 
@@ -576,7 +576,7 @@ the evidence against \(H_0\)
   \(\mathcal{O}\), this induces an ordering on \(\mathcal{O}\).
 \end{itemize}
 
-In our example: \(T=\hat\beta_1=\hat\sigma_{xy}/\hat\sigma_{yy}\) is the
+In our example: \(T=\hat\beta_1=\hat\sigma_{xy}/\hat\sigma_{xx}\) is the
 (estimated) slope.\\
 Higher the slope, higher the evidence for \(H_1\).
 
@@ -605,7 +605,7 @@ experiment) finds false correlations with probability \(\alpha\)
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633    >  0.0150
+## Reaction.Time    t 2.633    >  0.0180
 \end{verbatim}
 
 \begin{Shaded}
@@ -650,7 +650,7 @@ I consider anomalous coefficients estimated as very small but also very
 large (`far from 0'). The p-value is
 
 \(p=\frac{\#(|\hat{\beta}_1^{*b} | \geq|\hat{\beta}_1^{obs}|)}{B}=\)
-0.0331
+0.0306
 
 (remark: the observed test stat is included among the permuted one)
 
@@ -659,14 +659,14 @@ In \texttt{flip}:
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(flip)}
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{tail=}\DecValTok{0}\NormalTok{,}\AttributeTok{perms=}\DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{tail=}\DecValTok{0}\NormalTok{,}\AttributeTok{perms=}\DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633   ><  0.0339
+## Reaction.Time    t 2.633   ><  0.0350
 \end{verbatim}
 
 \begin{Shaded}
@@ -729,16 +729,24 @@ Define the test: \begin{equation}
 \textbf{Theorem}: Under \(H_0\), \(E_P(\phi(Y))=\alpha\), that is
 \(P(T(Y) > T^{(k)}) \leq \alpha\).
 
-\textbf{Proof}\\
-By the group structure, \(\pi\Pi = \Pi\) for all \(\pi \in \Pi\). Hence,
-\(T^{(k)}(\pi Y) = T^{(k)}(Y)\) for all \(\pi \in \Pi\). Let \(h\) have
-the uniform distribution on \(\Pi\). Then, under \(H_p\), the rejection
-probability is \[
-P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}.
-\] The first equality follows from the null hypothesis, and the second
-equality holds since \(T^{(k)}(Y) = T^{(k)}(hY)\). Since \(h\) is
-uniform on \(\Pi\), the above probability equals \[
-\mathbb{E}_P\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
+\textbf{Proof}
+
+For each \(Y \in \mathcal{Y}\), define \(O_y\) to be the orbit of \(Y\),
+which is the set \(\{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}\).
+
+Let \(A = \{Y \in \mathcal{Y} : T(Y) > T^{(k)}(Y)\}\) be the set of
+elements of the sample space that lead to rejection. Suppose \(H_p\)
+holds. By the group structure, \(\Pi\pi = \Pi\) for all \(\pi \in \Pi\).
+Consequently, \(T^{(k)}(\pi Y) = T^{(k)}(Y)\) for all \(\pi \in \Pi\).
+Thus,
+\[\#\{\pi   \in \Pi  : \pi Y \in A\} = \#\{\pi   \in \Pi  : T(\pi Y) > T^{(k)}(\pi Y)\} = \#\{\pi   \in \Pi  : T(\pi Y) > T^{(k)}(Y)\} \leq \alpha |O_Y|\].
+
+Endow the space of orbits with the \(\sigma\)-algebra that it inherits
+from the \(\sigma\)-algebra on \(\mathcal{Y}\). Analogously to the proof
+of Theorem 15.2.2 in Lehmann (2005), we obtain \[
+P(Y \in A | O_Y) = \frac{|A|}{|O_Y|}.
+\] By the argument above, this is bounded by \(\alpha\). Hence, \[
+P(Y \in A) = \mathbb{E}\{P(Y \in A | O_Y)\} \leq \alpha
 \] as was to be shown.
 
 \textbf{Alternative Proof}
@@ -755,7 +763,15 @@ gives\\
 (See also Lehmann, E. L., \& Romano, J. P. (2006). Testing statistical
 hypotheses. Springer Science \& Business Media.)
 
-\textbf{More about permutation testing}
+\subsubsection{More about permutation
+testing}\label{more-about-permutation-testing}
+
+\textbf{Randomization Hypothesis and Group structure}
+
+Randomization Hypothesis applied to \(\pi \in \Pi\) having a Group
+structure implies \[
+(T(\pi_1Y),\ldots,T_1(\pi_{|\mathcal{O}|}Y))=(T(\pi_1\pi Y),\ldots,T_1(\pi_{|\mathcal{O}|}\pi Y))
+\] for each \(\pi \in \Pi\).
 
 \textbf{Orbit} of \(\mathcal{O}\):
 \[\mathcal{O}=\{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}.\]
@@ -1053,27 +1069,27 @@ tests}\label{permutationally-equivalent-tests}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms =} \DecValTok{10000}\NormalTok{,}\AttributeTok{statTest  =} \StringTok{"rank"}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms =} \DecValTok{5000}\NormalTok{,}\AttributeTok{statTest  =} \StringTok{"rank"}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##                   Test  Stat tail p-value
-## Reaction.Time Wilcoxon 2.179   ><  0.0210
+## Reaction.Time Wilcoxon 2.189   ><  0.0204
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# to see the rank correlation use the workaround:}
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(}\FunctionTok{rank}\NormalTok{(reaction}\SpecialCharTok{$}\NormalTok{Reaction.Time)}\SpecialCharTok{\textasciitilde{}}\FunctionTok{rank}\NormalTok{(reaction}\SpecialCharTok{$}\NormalTok{Age),}\AttributeTok{perms =} \DecValTok{10000}\NormalTok{,}\AttributeTok{statTest  =} \StringTok{"cor"}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(}\FunctionTok{rank}\NormalTok{(reaction}\SpecialCharTok{$}\NormalTok{Reaction.Time)}\SpecialCharTok{\textasciitilde{}}\FunctionTok{rank}\NormalTok{(reaction}\SpecialCharTok{$}\NormalTok{Age),}\AttributeTok{perms =} \DecValTok{5000}\NormalTok{,}\AttributeTok{statTest  =} \StringTok{"cor"}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##                              Test   Stat tail p-value
-## rank.reaction.Reaction.Time.  cor 0.7153   ><  0.0221
+## rank.reaction.Reaction.Time.  cor 0.7153   ><  0.0222
 \end{verbatim}
 
 \begin{Shaded}
@@ -1161,14 +1177,14 @@ problem}\label{the-two-independent-sample-problem}
 \FunctionTok{data}\NormalTok{(}\StringTok{"seeds"}\NormalTok{)}
 \NormalTok{seeds}\OtherTok{=}\FunctionTok{na.omit}\NormalTok{(seeds)}
 
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(y}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{perms =} \DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(y}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{perms =} \DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##   Test  Stat tail p-value
-## y    t 2.061   ><  0.0511
+## y    t 2.061   ><  0.0526
 \end{verbatim}
 
 \begin{Shaded}
@@ -1215,14 +1231,14 @@ instead of asymptotic one (and we have no limitations with ties).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(y}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{statTest =} \StringTok{"rank"}\NormalTok{,}\AttributeTok{perms=}\DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(y}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{statTest =} \StringTok{"rank"}\NormalTok{,}\AttributeTok{perms=}\DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
-##       Test Stat tail p-value
-## y Wilcoxon 2.13   ><  0.0317
+##       Test  Stat tail p-value
+## y Wilcoxon 2.148   ><  0.0292
 \end{verbatim}
 
 \begin{Shaded}
@@ -1283,14 +1299,14 @@ methods}\label{chi-square-and-other-cathegorical-methods}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Germinated}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{statTest =} \StringTok{"Chisq"}\NormalTok{,}\AttributeTok{perms=}\DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Germinated}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{statTest =} \StringTok{"Chisq"}\NormalTok{,}\AttributeTok{perms=}\DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##                         Test  Stat tail p-value
-## grp_|_Germinated Chi Squared 3.135    >  0.1557
+## grp_|_Germinated Chi Squared 3.135    >  0.1610
 \end{verbatim}
 
 \begin{Shaded}
@@ -1315,15 +1331,15 @@ methods}\label{chi-square-and-other-cathegorical-methods}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\FunctionTok{flip}\NormalTok{(Germinated}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{perms=}\DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\FunctionTok{flip}\NormalTok{(Germinated}\SpecialCharTok{\textasciitilde{}}\NormalTok{grp,}\AttributeTok{data=}\NormalTok{seeds,}\AttributeTok{perms=}\DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##                 Test   Stat tail p-value
-## GerminatedFALSE    t -1.798   ><  0.1542
-## GerminatedTRUE     t  1.798   ><  0.1542
+## GerminatedFALSE    t -1.798   ><  0.1596
+## GerminatedTRUE     t  1.798   ><  0.1596
 \end{verbatim}
 
 \subsection{ANOVA (C-sample)}\label{anova-c-sample}
@@ -1375,14 +1391,14 @@ e.g.~3 groups of \texttt{Age}: young \([18-35)\), middle age
 \begin{Highlighting}[]
 \NormalTok{reaction}\SpecialCharTok{$}\NormalTok{AgeCateg}\OtherTok{=}\FunctionTok{cut}\NormalTok{(reaction}\SpecialCharTok{$}\NormalTok{Age,}\FunctionTok{c}\NormalTok{(}\DecValTok{18}\NormalTok{,}\DecValTok{35}\NormalTok{,}\DecValTok{65}\NormalTok{,}\DecValTok{100}\NormalTok{),}\AttributeTok{right =} \ConstantTok{FALSE}\NormalTok{)}
   
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{AgeCateg,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms =} \DecValTok{10000}\NormalTok{,}\AttributeTok{statTest  =} \StringTok{"ANOVA"}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{AgeCateg,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms =} \DecValTok{5000}\NormalTok{,}\AttributeTok{statTest  =} \StringTok{"ANOVA"}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##               Test Stat tail p-value
-## Reaction.Time    F 4.02    >  0.0838
+## Reaction.Time    F 4.02    >  0.0780
 \end{verbatim}
 
 \begin{Shaded}
@@ -1435,15 +1451,15 @@ e.g.~3 groups of \texttt{Age}: young \([18-35)\), middle age
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{AgeCateg,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms =} \DecValTok{10000}\NormalTok{,}\AttributeTok{tail=}\DecValTok{1}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{AgeCateg,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms =} \DecValTok{5000}\NormalTok{,}\AttributeTok{tail=}\DecValTok{1}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##                                    Test   Stat tail p-value
-## Reaction.Time_|_AgeCateg.[35,65).     t 0.1423    >  0.4322
-## Reaction.Time_|_AgeCateg.[65,100).    t 2.2444    >  0.0259
+## Reaction.Time_|_AgeCateg.[35,65).     t 0.1423    >  0.4336
+## Reaction.Time_|_AgeCateg.[65,100).    t 2.2444    >  0.0220
 \end{verbatim}
 
 \begin{Shaded}
@@ -1455,7 +1471,7 @@ e.g.~3 groups of \texttt{Age}: young \([18-35)\), middle age
 \begin{verbatim}
 ## 
 ##    comb.funct nVar  Stat p-value
-## V1     Fisher    2 4.492  0.0210
+## V1     Fisher    2 4.652  0.0202
 \end{verbatim}
 
 \subsection{Stratified permutations (discrete
@@ -1481,29 +1497,29 @@ observations only within the strata defined by \(z\).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age,}\AttributeTok{Strata=}\SpecialCharTok{\textasciitilde{}}\NormalTok{Gender,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms=}\DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age,}\AttributeTok{Strata=}\SpecialCharTok{\textasciitilde{}}\NormalTok{Gender,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms=}\DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633   ><  0.0684
+## Reaction.Time    t 2.633   ><  0.0718
 \end{verbatim}
 
 Alternative model (more about NPC later):
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age}\SpecialCharTok{*}\NormalTok{Gender,}\AttributeTok{Strata=}\SpecialCharTok{\textasciitilde{}}\NormalTok{Gender,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms=}\DecValTok{10000}\NormalTok{))}
+\NormalTok{(}\AttributeTok{res=}\FunctionTok{flip}\NormalTok{(Reaction.Time}\SpecialCharTok{\textasciitilde{}}\NormalTok{Age}\SpecialCharTok{*}\NormalTok{Gender,}\AttributeTok{Strata=}\SpecialCharTok{\textasciitilde{}}\NormalTok{Gender,}\AttributeTok{data=}\NormalTok{reaction,}\AttributeTok{perms=}\DecValTok{5000}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
 ## 
 ##                               Test    Stat tail p-value
-## Reaction.Time_|_Age              t  2.4826   ><  0.0725
-## Reaction.Time_|_Age:Gender.M.    t -0.6518   ><  0.3402
+## Reaction.Time_|_Age              t  2.4826   ><  0.0750
+## Reaction.Time_|_Age:Gender.M.    t -0.6518   ><  0.3394
 \end{verbatim}
 
 \begin{Shaded}
@@ -1515,7 +1531,7 @@ Alternative model (more about NPC later):
 \begin{verbatim}
 ## 
 ##    comb.funct nVar  Stat p-value
-## V1     Fisher    2 3.702  0.1371
+## V1     Fisher    2 3.671  0.1406
 \end{verbatim}
 
 \section{Multivariate Testing}\label{multivariate-testing}
@@ -1845,8 +1861,8 @@ In our data:
 \begin{verbatim}
 ## 
 ##   Test  Stat tail p-value Adjust:Fisher
-## x    t 1.320   ><  0.1810        0.1810
-## y    t 2.061   ><  0.0540        0.0880
+## x    t 1.320   ><  0.1850        0.1850
+## y    t 2.061   ><  0.0460        0.0750
 \end{verbatim}
 
 \begin{Shaded}
@@ -1858,8 +1874,8 @@ In our data:
 \begin{verbatim}
 ## 
 ##   Test  Stat tail p-value Adjust:Fisher Adjust:maxT
-## x    t 1.320   ><  0.1810        0.1810      0.1810
-## y    t 2.061   ><  0.0540        0.0880      0.0750
+## x    t 1.320   ><  0.1850        0.1850      0.1850
+## y    t 2.061   ><  0.0460        0.0750      0.0640
 \end{verbatim}
 
 \subsection{Conclusion}\label{conclusion-1}
@@ -2049,7 +2065,7 @@ Now the analysis: A simple solution could be:
 ##       Test   Stat tail p-value sig.
 ## AUC  coeff 0.0221   ><  0.0010  ***
 ## Cmax coeff 0.0208   ><  0.0010  ***
-## Tmax coeff 0.0024   ><  0.2930
+## Tmax coeff 0.0024   ><  0.2710
 \end{verbatim}
 
 \begin{Shaded}
@@ -2079,7 +2095,7 @@ Multivariate:
 \begin{verbatim}
 ## 
 ##    comb.funct nVar  Stat p-value
-## V1     Fisher    3 15.04  0.0010
+## V1     Fisher    3 15.12  0.0010
 \end{verbatim}
 
 There is an effect of \texttt{Dose}, overall.
@@ -2109,7 +2125,7 @@ There is an effect of \texttt{Dose}, overall.
 ##       Test   Stat tail p-value Adjust:maxT Adjust:holm Adjust:Fisher sig.
 ## AUC  coeff 0.0221   ><  0.0010      0.0010      0.0030        0.0010  ***
 ## Cmax coeff 0.0208   ><  0.0010      0.0010      0.0030        0.0010  ***
-## Tmax coeff 0.0024   ><  0.2930      0.2930      0.2930        0.2930
+## Tmax coeff 0.0024   ><  0.2710      0.2710      0.2710        0.2710
 \end{verbatim}
 
 \texttt{AUC} and \texttt{Cmax} show a significant effect after

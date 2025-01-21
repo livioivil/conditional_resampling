@@ -3,14 +3,14 @@ title: "Permutation Tests"
 author: "Livio Finos"
 date: "University of Padova"
 output: 
-  pdf_document:
-    keep_tex: yes
-    number_sections: yes
-    toc: yes
   html_document:
     toc: yes
     # toc_float: yes
     number_sections: yes
+  pdf_document:
+    keep_tex: yes
+    number_sections: yes
+    toc: yes
   beamer_presentation: default  
   ioslides_presentation:
     logo: figs/logoUnipd.jpg
@@ -346,7 +346,7 @@ par(mfrow=c(1,1))
 <!-- --- -->
 
 ```{r,echo=FALSE}
-B=10000
+B=5000
 ```
 
 We repeat `r B` times and we look at the histogram of the $\hat{\beta}_1$
@@ -431,7 +431,7 @@ To compute it, we need the
 - compute a test statistic for each element of the Orbit $\mathcal{O}$, this induces an ordering on $\mathcal{O}$.
 
 
-In our example: $T=\hat\beta_1=\hat\sigma_{xy}/\hat\sigma_{yy}$ is the (estimated) slope.  
+In our example: $T=\hat\beta_1=\hat\sigma_{xy}/\hat\sigma_{xx}$ is the (estimated) slope.  
 Higher the slope, higher the evidence for $H_1$. 
 
 <!-- ---- -->
@@ -495,7 +495,7 @@ $p=\frac{\#(|\hat{\beta}_1^{*b} | \geq|\hat{\beta}_1^{obs}|)}{B}=$ `r (sum(beta.
 In `flip`:
 ```{r}
 library(flip)
-(res=flip(Reaction.Time~Age,data=reaction,tail=0,perms=10000))
+(res=flip(Reaction.Time~Age,data=reaction,tail=0,perms=5000))
 ```
 
 
@@ -548,14 +548,31 @@ Define the test:
 
 **Theorem**: Under $H_0$, $E_P(\phi(Y))=\alpha$, that is $P(T(Y) > T^{(k)}) \leq \alpha$.
 
-**Proof**  
-By the group structure, $\pi\Pi = \Pi$ for all $\pi \in \Pi$. Hence, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Let $h$ have the uniform distribution on $\Pi$. Then, under $H_p$, the rejection probability is
+<!-- **Proof**   -->
+<!-- By the group structure, $\pi\Pi = \Pi$ for all $\pi \in \Pi$. Hence, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Let $h$ have the uniform distribution on $\Pi$. Then, under $H_p$, the rejection probability is -->
+<!-- $$ -->
+<!-- P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}. -->
+<!-- $$ -->
+<!-- The first equality follows from the null hypothesis, and the second equality holds since $T^{(k)}(Y) = T^{(k)}(hY)$. Since $h$ is uniform on $\Pi$, the above probability equals -->
+<!-- $$ -->
+<!-- \mathbb{E}_P\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha, -->
+<!-- $$ -->
+<!-- as was to be shown. -->
+
+**Proof**
+
+For each $Y \in \mathcal{Y}$, define $O_y$ to be the orbit of $Y$, which is the set $\{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}$.
+
+Let $A = \{Y \in \mathcal{Y} : T(Y) > T^{(k)}(Y)\}$ be the set of elements of the sample space that lead to rejection. Suppose $H_p$ holds. By the group structure, $\Pi\pi = \Pi$ for all $\pi \in \Pi$. Consequently, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Thus, 
+$$\#\{\pi   \in \Pi  : \pi Y \in A\} = \#\{\pi   \in \Pi  : T(\pi Y) > T^{(k)}(\pi Y)\} = \#\{\pi   \in \Pi  : T(\pi Y) > T^{(k)}(Y)\} \leq \alpha |O_Y|$$.
+
+Endow the space of orbits with the $\sigma$-algebra that it inherits from the $\sigma$-algebra on $\mathcal{Y}$. Analogously to the proof of Theorem 15.2.2 in Lehmann (2005), we obtain
 $$
-P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}.
+P(Y \in A | O_Y) = \frac{|A|}{|O_Y|}.
 $$
-The first equality follows from the null hypothesis, and the second equality holds since $T^{(k)}(Y) = T^{(k)}(hY)$. Since $h$ is uniform on $\Pi$, the above probability equals
+By the argument above, this is bounded by $\alpha$. Hence,
 $$
-\mathbb{E}_P\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha,
+P(Y \in A) = \mathbb{E}\{P(Y \in A | O_Y)\} \leq \alpha
 $$
 as was to be shown.
 
@@ -577,14 +594,14 @@ $E_P(\phi(Y))=\alpha$
 (See also Lehmann, E. L., & Romano, J. P. (2006). Testing statistical hypotheses. Springer Science & Business Media.)
 
 
-**More about permutation testing**
+### More about permutation testing
 
 <!-- The null hypothesis $H_0$ implies that the joint distribution -->
 <!-- of the test statistics $T(\pi Y), \pi \in \Pi$, is invariant under all transformations in $\Pi$ of $Y$. -->
 <!-- That is, writing $\Pi = \{\pi_1,\ldots, \pi_{|\Pi|}\}$, under $H_0$: -->
 
 <!-- $$T(\pi_1 Y), \ldots, T(\pi_{|\Pi|}Y) \overset{d}{=} T(\pi_1g Y), \ldots, T(\pi_{|\Pi|}gY)$$ -->
-<!-- for all $g \in \Pi$. -->
+<!-- for all $\pi    \in \Pi$. -->
 
 <!-- Note that it holds when for all $\pi \in \Pi$: $Y \overset{d}{=}\pi Y$. -->
 
@@ -592,6 +609,15 @@ $E_P(\phi(Y))=\alpha$
 <!-- ---- -->
 
 <!-- $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the vector of observed data -->
+
+**Randomization Hypothesis and Group structure**  
+
+Randomization Hypothesis applied to $\pi \in \Pi$ having a Group structure implies 
+$$
+(T(\pi_1Y),\ldots,T_1(\pi_{|\mathcal{O}|}Y))=(T(\pi_1\pi Y),\ldots,T_1(\pi_{|\mathcal{O}|}\pi Y))
+$$
+for each $\pi \in \Pi$.
+
 
 **Orbit** of $\mathcal{O}$: 
 $$\mathcal{O}=\{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}.$$
@@ -768,10 +794,10 @@ plot(res_cor@permT,res_t@permT,pch=20,col=2)
      
 
 ```{r}
-(res=flip(Reaction.Time~Age,data=reaction,perms = 10000,statTest  = "rank"))
+(res=flip(Reaction.Time~Age,data=reaction,perms = 5000,statTest  = "rank"))
 
 # to see the rank correlation use the workaround:
-(res=flip(rank(reaction$Reaction.Time)~rank(reaction$Age),perms = 10000,statTest  = "cor"))
+(res=flip(rank(reaction$Reaction.Time)~rank(reaction$Age),perms = 5000,statTest  = "cor"))
 
 
 (cor.test(reaction$Reaction.Time,reaction$Age,method="spe"))
@@ -807,7 +833,7 @@ plot(res)
 data("seeds")
 seeds=na.omit(seeds)
 
-(res=flip(y~grp,data=seeds,perms = 10000))
+(res=flip(y~grp,data=seeds,perms = 5000))
 
 (summary(lm(y~grp,data=seeds)))
 
@@ -828,7 +854,7 @@ Yes, equivalent to rank-tests, we just rely on exact distribution instead of asy
 
 
 ```{r}
-(res=flip(y~grp,data=seeds,statTest = "rank",perms=10000))
+(res=flip(y~grp,data=seeds,statTest = "rank",perms=5000))
 
 (wilcox.test(y~grp,data=seeds))
 ```
@@ -853,7 +879,7 @@ table(seeds$grp,seeds$Germinated)
 ```{r}
 chisq.test(seeds$grp,seeds$Germinated)
 
-(res=flip(Germinated~grp,data=seeds,statTest = "Chisq",perms=10000))
+(res=flip(Germinated~grp,data=seeds,statTest = "Chisq",perms=5000))
 ```
 <!-- --- -->
 
@@ -868,7 +894,7 @@ plot(res)
 ```{r,fig.height=5,fig.width=5}
 fisher.test(seeds$grp,seeds$Germinated)$p.value
 
-(flip(Germinated~grp,data=seeds,perms=10000))
+(flip(Germinated~grp,data=seeds,perms=5000))
 ```
 
 ## ANOVA (C-sample)
@@ -894,7 +920,7 @@ e.g. 3 groups of `Age`: young $[18-35)$, middle age $[35-60)$, old $[60-100)$
 ```{r}
 reaction$AgeCateg=cut(reaction$Age,c(18,35,65,100),right = FALSE)
   
-(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 10000,statTest  = "ANOVA"))
+(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 5000,statTest  = "ANOVA"))
 
 summary(lm(Reaction.Time~AgeCateg,data=reaction))
 
@@ -910,7 +936,7 @@ summary(lm(Reaction.Time~AgeCateg,data=reaction))
 (more details on NPC later)
 
 ```{r}
-(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 10000,tail=1))
+(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 5000,tail=1))
 npc(res)
 ```
 
@@ -934,7 +960,7 @@ Can e permute same as in the previous cases? NO. We permute the observations onl
 
 <!-- ```{r} -->
 <!-- library(flip) -->
-<!-- (res=flip(Reaction.Time~Age,data=reaction,perms=10000)) -->
+<!-- (res=flip(Reaction.Time~Age,data=reaction,perms=5000)) -->
 <!-- ``` -->
 
 <!-- ---- -->
@@ -942,7 +968,7 @@ Can e permute same as in the previous cases? NO. We permute the observations onl
 <!-- ## Stratified permutations (nuisances) -->
 
 ```{r}
-(res=flip(Reaction.Time~Age,Strata=~Gender,data=reaction,perms=10000))
+(res=flip(Reaction.Time~Age,Strata=~Gender,data=reaction,perms=5000))
 ```
 
 <!-- ---- -->
@@ -951,7 +977,7 @@ Can e permute same as in the previous cases? NO. We permute the observations onl
 Alternative model (more about NPC later):
 
 ```{r}
-(res=flip(Reaction.Time~Age*Gender,Strata=~Gender,data=reaction,perms=10000))
+(res=flip(Reaction.Time~Age*Gender,Strata=~Gender,data=reaction,perms=5000))
 npc(res)
 ```
 

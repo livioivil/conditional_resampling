@@ -1,3 +1,0 @@
-"0","## compare also with"
-"0","# flip(Reaction.Time~Age,data=reaction,tail=1,statTest = ""cor"")"
-"0","# flip(Reaction.Time~Age,data=reaction,tail=1,statTest = ""coeff"")"
