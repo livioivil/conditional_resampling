@@ -3,14 +3,14 @@ title: "Permutation Tests"
 author: "Livio Finos"
 date: "University of Padova"
 output: 
-  html_document:
-    toc: yes
-    # toc_float: yes
-    number_sections: yes
   pdf_document:
     keep_tex: yes
     number_sections: yes
     toc: yes
+  html_document:
+    toc: yes
+    # toc_float: yes
+    number_sections: yes
   beamer_presentation: default  
   ioslides_presentation:
     logo: figs/logoUnipd.jpg
@@ -20,1359 +20,1136 @@ output:
 
 ## Introduction
 
-- Well established nonparametric approach to **inference**: Fisher, 1935; Pitman, 1937; Pitman, 1938.  
-- (In general) it requires less assumptions about the data generating process than the parametric counterpart.   
-- Very good inferential properties, typically:  
-    * exactness (i.e. exact control of the type I error)
-    * asymptotically optimality and convergence to the parametric counterpart when it does exist.
+- Well-established nonparametric inference approach: Fisher (1935); Pitman (1937, 1938).  
+- Generally requires fewer assumptions about the data generating process than parametric counterparts.  
+- Excellent inferential properties, typically:  
+    * Exactness (exact control of Type I error)
+    * Asymptotic optimality and convergence to parametric counterparts when they exist.
 
 <!-- ---- -->
 
-- Fisher exact test is a prototypical example, but
--  the general approach has restricted applicability without the support of a computer. 
+- Fisher's exact test is a prototypical example, but
+- The general approach had limited applicability without computational support. 
 
-<!-- This is the case of very small datasets where all possible rearrangement of the data can be enumerated. In all other cases, only special cases can be treated ’by hand’. The most well-known example is the comparison of two independent samples with a binomial response, that is, the  -->
-
-## Renewed interest toward permutation testing
-
-- A milestone: Westfall and Young (1993). Resampling-Based Multiple Testing: 
-Examples and Methods for p-value Adjustment. Wiley.
-- Many actives areas of research adopt these methods in their daily statistical analysis (e.g. genetics and neuroscience: Nichols and Holmes (2002); Pantazis et al. (2009); Winkler et al. (2014)).  
+<!-- This was the case for very small datasets where all possible data rearrangements could be enumerated. In other cases, only special cases could be treated 'by hand'. The most well-known example is comparing two independent samples with a binomial response. -->
+  
+## Renewed Interest in Permutation Testing
+  
+  - A milestone: Westfall and Young (1993). *Resampling-Based Multiple Testing: Examples and Methods for p-value Adjustment*. Wiley.
+- Many active research areas adopt these methods in daily statistical analysis (e.g., genetics and neuroscience: Nichols and Holmes (2002); Pantazis et al. (2009); Winkler et al. (2014)).  
 - Permutation approach:  
-    * Ideal for **randomized experimental design**  
-    * deals with very complex
-models,  without formal definition of the data generating process.
+  * Ideal for **randomized experimental designs**  
+  * Handles complex models without formal definition of the data generating process.
 
-## The package `flip`
+## The `flip` Package
 
-It is on CRAN and on github (https://github.com/livioivil/flip)
+Available on CRAN and GitHub (https://github.com/livioivil/flip).
 
-To install the github version type (in R):
-
+To install the GitHub version in R:
+  
 ```{r,eval=FALSE,echo=TRUE}
 library(devtools)
 install_github('livioivil/flip')
 ```
- 
 
-
-<!-- ---- -->
-
-**Before we start**
-
+**Before starting**
+  
 ```{r}
-#clean the memory
-rm (list=ls ())
+# Clean memory
+rm(list = ls())
 
+# Customize graph output
+par.old <- par()
+par(cex.main = 1.5, lwd = 2, col = "darkgrey", pch = 20, cex = 3)
+palette(c("#FF0000", "#00A08A", "#FFCC00", "#445577", "#45abff"))
 
-# We customize the output of our graphs a little bit
-par.old=par ()
-par (cex.main=1.5, lwd=2, col="darkgrey", pch=20, cex=3)
-# par (par.old)
-palette (c ("#FF0000", "#00A08A", "#FFCC00", "#445577", "#45abff"))
-
-# customize the output of knitr
-knitr :: opts_chunk$set (fig.align="center")#, fig.width=6, fig.height=6)
+# Customize knitr output
+knitr::opts_chunk$set(fig.align = "center")  # fig.width=6, fig.height=6
 ```
 
 ## The Age vs Reaction Time Dataset
 
-The reaction time of these subjects was tested by having them grab a meter stick after it was released by the tester. The number of centimeters that the meter stick dropped before being caught is a direct measure of the person’s response time.
+Subjects' reaction times were tested by having them grab a meter stick after it was released. The number of centimeters the meter stick dropped before being caught directly measures response time.
 
-The values of `Age` are in years. The `Gender` is coded as `F` for female and  `M` for male.
-The values of `Reaction.Time` are in centimeters.
+`Age` values are in years. `Gender` is coded as `F` for female and `M` for male. `Reaction.Time` values are in centimeters.
 
-(data are fictitious)
+(Data are fictitious)
 
-To read the data
+To read the data:
 
 ```{r}
-data(reaction,package = "flip")
-## or download it from: https://github.com/livioivil/flip/tree/master/data
-## or 
-#load("reaction.rda")
- str (reaction)
+data(reaction, package = "flip")
+# Alternatively, download from: https://github.com/livioivil/flip/tree/master/data
+# or load("reaction.rda")
+str(reaction)
 ```
 
-<!-- --- -->
-
-We plot the data
+Plot the data:
 
 ```{r,fig.height=4,fig.width=4}
-plot(x=reaction$Age,y=reaction$Reaction.Time,pch=20,col=2,cex=2)
+plot(x = reaction$Age, y = reaction$Reaction.Time, pch = 20, col = 2, cex = 2)
 ```
 
-## Measuring the dependence between two variables
+## Measuring Dependence Between Two Variables
 
-we define:
+Define:
+- $X = Age$  
+- $Y = Reaction.Time$
 
-- $X=Age$  
-- $Y=Reaction.Time$
-
-We review some famous index to measure the (linear) dependence among two variables
+Review common indices for measuring (linear) dependence between two variables.
 
 ### Covariance and Variance
 
 **Covariance** between $X$ and $Y$:
 
-$\sigma_{xy}=\frac{\sum_{i=1} ^ n (x_i- \bar{x}) (y_i- \bar{y} )}{n}$
+$\sigma_{xy} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{n}$
 
-- values between $- \infty$ and $\infty$  
-- $\sigma_{xy} \approx 0$: there is no dependency between $X$ and $Y$  
-- $\sigma_{xy} >> (<<) 0$: there is a strong positive (negative) dependency between $X$ and $Y$  
+- Values between $-\infty$ and $\infty$  
+- $\sigma_{xy} \approx 0$: No dependency between $X$ and $Y$  
+- $\sigma_{xy} \gg 0$ ($\ll 0$): Strong positive (negative) dependency
 
-<!-- --- -->
+**Variance** of $X$:
 
-**Variance** of $X$ 
-<!-- (= covariance between $X$ and $X$): -->
-
-$\sigma_{xx}=\sigma_{x} ^ 2= \frac{\sum_{i=1} ^ n (x_i- \bar{x}) ^ 2}{n}$
+$\sigma_{xx} = \sigma_x^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n}$
 
 **Standard Deviation** of $X$:
 
-$\sigma_{xx}=\sqrt{\sigma_{xx}}=\sigma_{x}$
-
-<!-- **(Co)Variance** of $X$:   -->
-<!-- $\sigma_{xy} ^ o=\frac{\sum_{i=1} ^ n (x_i- \bar{x}) (y_i- \bar{ y})}{n-1}$ -->
-
-
-<!-- (similarly for variance and standard deviation) -->
-
+$\sigma_x = \sqrt{\sigma_{xx}}$
 
 ### Correlation
-With the Covariance it is difficult to understand when the relationship between $X$ and $Y$ is strong/weak.
-We note that
 
-$- \sigma_{x} \sigma_{y} \leq \sigma_{xy} \leq \sigma_{x} \sigma_{y}$
-<!-- we divide each memeber by $\sigma_x \sigma_y$: -->
-is quivalent to
-$-1 \leq \frac{\sigma_{xy}}{\sigma_{x} \sigma_{y}} \leq 1$
+Covariance alone makes it difficult to assess relationship strength. Note that:
 
+$-\sigma_x \sigma_y \leq \sigma_{xy} \leq \sigma_x \sigma_y$
+
+is equivalent to:
+
+$-1 \leq \frac{\sigma_{xy}}{\sigma_x \sigma_y} \leq 1$
 
 **Correlation** between $X$ and $Y$:
 
-$\rho_{xy}=\frac{\sigma{xy}}{\sigma_{x} \sigma_{y}} =
-\frac{\sum_{i=1} ^ n (x_i- \bar{x}) (y_i- \bar{y})}{\sqrt{\sum_{i=1} ^ n (x_i- \bar{ x}) ^ 2} \sqrt{\sum_{i=1} ^ n (y_i- \bar{y}) ^ 2}}$
+$\rho_{xy} = \frac{\sigma_{xy}}{\sigma_x \sigma_y} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^n (y_i - \bar{y})^2}}$
 
-- values between $-1$ and $1$
-- $\rho_{xy} \approx 0$: there is no dependency between $X$ and $Y$
-- $\rho_{xy} \approx 1 (-1)$: there is a strong positive (negative) dependency between $X$ and $Y$
+- Values between $-1$ and $1$
+- $\rho_{xy} \approx 0$: No dependency
+- $\rho_{xy} \approx 1$ ($-1$): Strong positive (negative) dependency
 
+### Linear Trend: Least Squares Method
 
-### Linear Trend, the least squares method
-We describe the relationship between   
-`Reaction.Time` and
-`Age` with a straight line.
+Describe the relationship between `Reaction.Time` and `Age` with a straight line:
 
 $E(Reaction.Time) \approx \beta_0 + \beta_1 Age$  
-$E(Y)=\beta_0 + \beta_1X$
+$E(Y) = \beta_0 + \beta_1 X$
 
+Draw a line through the center of the data.
 
-Let's draw a line 'in the middle' of the data.
+**Least-squares estimator**: Find parameters minimizing the sum of squared residuals:
 
-<!-- ---  -->
-
-The **least-squares estimator**
-
-We look for the one that passes more 'in the middle', the one that minimizes the sum of the squares of the residues:
-
-$\hat{\beta}_0$ and $\hat{\beta}_1$ such that  
-$\sum_{i=1} ^ n (y_i - (\hat{\beta}_0 + \hat{\beta}_1x_i )) ^ 2$
-is minimum.
-
-<!-- --- -->
+Find $\hat{\beta}_0$ and $\hat{\beta}_1$ that minimize:
+$\sum_{i=1}^n (y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i))^2$
 
 ```{r,echo=FALSE}
-model=lm(Reaction.Time~Age,data=reaction)
+model <- lm(Reaction.Time ~ Age, data = reaction)
 ```
 
 Estimates:  
+- Slope: $\hat{\beta}_1 = \frac{\sigma_{xy}}{\sigma_{xx}} = \rho_{xy}\frac{\sigma_y}{\sigma_x} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2} =$ `r coefficients(model)[2]`  
+- Intercept: $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} =$ `r coefficients(model)[1]`
+- Estimated response: $\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i$
+- Residuals: $y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i) = y_i - \hat{y}_i$
 
-- Angular coefficient: $\hat{\beta}_1=\frac{\sigma_{xy}}{\sigma_{xx}}=\rho_{xy}\frac{\sigma_{y}}{\sigma_{x}}=\frac{\sum_{i=1}^n(x_i- \bar{x})(y_i-\bar{y})}{\sum_{i=1}^n (x_i-\bar{x})^2}=$ `r coefficients(model)[2]`  
-- Intercept: $\hat{\beta}_0=\bar{y}-\hat{\beta}_1\bar{x}=$ `r coefficients(model)[1]`
-- Response (estimated $y$): $\hat{y}_i=\hat{\beta}_0 + \hat{\beta}_1x_i$
-- Residuals (from the estimated response):
-$y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)=y_i- \hat{y}_i$
+Sum of squared residuals: $\sum_{i=1}^n (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i)^2 = \sum_{i=1}^n (y_i - \hat{y}_i)^2$
 
-
-and therefore the least squares are the sum of the squared residuals:
-$\sum_{i=1} ^ n (y_i- \hat{\beta}_0 - \hat{\beta}_1x_i) ^ 2=\sum_{i=1} ^ n (y_i- \hat{y}_i ) ^ 2$
-
-<!-- --- -->
-
-A graphical representation:
+Visual representation:
 
 ```{r}
-model=lm(Reaction.Time~Age,data=reaction)
+model <- lm(Reaction.Time ~ Age, data = reaction)
 coefficients(model)
 ```
 
-<!-- --- -->
-
 ```{r}
-plot(reaction$Age,reaction$Reaction.Time,pch=20,col=2,cex=1)
-coeff=round(coefficients(model),1)
-title(paste("Y=",coeff[1],"+",coeff[2],"*X"))
-abline(model,col=1)
-``` 
-
-<!-- ## Interpretation of the coefficients -->
-
-<!-- - $\beta_0$ indicates the value of $y$ when $x=0$ (where the line intersects the ordinate axis).  -->
-<!-- - $\beta_1$ indicates how much $y$ grows as a unit of $x$ grows  -->
-<!--   - If $\beta_1=0$ there is no relation between $x$ and $y$.$Y$is constant (horizontal ), knowing$x$does not change the estimate of $y$ -->
-<!--   - If $\beta_1> (<) 0$the relation between $x$ and $y$is positive (negative). When $X$passes from$x$ a$x + 1$the estimate of $Y$goes from$\hat{y}$to$\hat{y} + \hat{\beta}_1$ -->
-
-
-# Permutation approach to Hypothesis Testing
-
-### Some remarks
-
-Let's note that all the measures above does not make any assumptions on the random process that generate them.
-
-Let now assume that $Y$ - and possibly $X$ - is generated by a random variable.
-
-Further minimal assumptions will be specified later.
-
-<!-- ---  -->
-
-The question:
-**Is there a relationship between $Y$ and $X$**?
-
-We estimated 
-$\hat{\beta}_1=$ `r coefficients(model)[2]`
-
-But the **true value** $\beta_1$ is really different from 0 (i.e. no relationship)?  
-Otherwise, is the difference from 0 due to the random sampling?
-
-
-- **Null Hypothesis** $H_0: \ \beta_1=0$ (the **true** $\beta_1$, not its estimate $\hat{\beta}_1$!).
-There is no relationship between $X$ and $Y$.
-
-- **Alternative Hypothesis **$H_1: \ \beta_1 >0$
-The relationship is positive.
-
-Other possible specifications of $H_1: \ \beta_1< 0$ and, more commonly,  $H_1: \ \beta_1 \neq 0$.
-
-
-
-<!-- ## Distribution of $\hat{\beta}_1$ (Statistics Test) if $H_0$ is true -->
-
-<!-- Suppose *the null hypothesis $H_0$ is true*. -->
-
-<!-- What are the possible values of $\beta_1$ conditional to the observed values $X$ and $Y$? -->
-
-<!-- On the data we calculated: -->
-<!-- ```{r} -->
-<!-- model=lm (Reaction.Time ~ Age, data=reaction) -->
-<!-- # Estimated beta_1: -->
-<!-- coefficients (model) [ "Age"] -->
-<!-- ``` -->
-
-
-
-## Permutation tests - in a nutshell
-As a toy example, let use a sub-set of the data:
-```{r, echo=FALSE,fig.height=4,fig.width=4}
-(reactionREd=reaction[2:4,])
-
-plot (reactionREd$Age, reactionREd$Reaction.Time, pch=20, col=1)
-abline (lm (Reaction.Time ~ Age, data=reactionREd))
+plot(reaction$Age, reaction$Reaction.Time, pch = 20, col = 2, cex = 1)
+coeff <- round(coefficients(model), 1)
+title(paste("Y =", coeff[1], "+", coeff[2], "* X"))
+abline(model, col = 1)
 ```
 
-<!-- --- -->
+# Permutation Approach to Hypothesis Testing
 
-- *If $H_0$* is true: there is no linear relationship between $X$ and $Y$
-- Therefore, the trend observed on the data is due to chance.
-- Any other match of $x_i$ and $y_i$ was equally likely to occur
-- I can generate the datasets of other hypothetical experiments by exchanging the order of the observations in $Y$.
-- How many equally likely datasets could I get with$X$ and $Y$observed?
-$3 * 2 * 1=3!=6$ possible datasets.
+### Preliminary Remarks
 
-Remark: Here we only assume that $y$ is a random variable. The only assumption here is the exchangeability of the observations: the joint density $f(y_1,\ldots,y_n)$ does not change when the ordering of $y_1,\ldots,y_n$ is changed.
+Note that all measures above make no assumptions about the random process generating the data.
 
-### All potential datasets
+Now assume $Y$ (and possibly $X$) is generated by a random variable. Further minimal assumptions will be specified later.
+
+**Question: Is there a relationship between $Y$ and $X$?**
+
+We estimated $\hat{\beta}_1 =$ `r coefficients(model)[2]`
+
+But is the **true value** $\beta_1$ actually different from 0 (indicating no relationship)? Or is the difference from 0 due to random sampling?
+
+- **Null Hypothesis** $H_0: \beta_1 = 0$ (the **true** $\beta_1$, not its estimate $\hat{\beta}_1$!). No relationship between $X$ and $Y$.
+
+- **Alternative Hypothesis** $H_1: \beta_1 > 0$ (positive relationship).
+
+Other possible $H_1$ specifications: $\beta_1 < 0$ or, more commonly, $\beta_1 \neq 0$.
+
+## Permutation Tests in a Nutshell
+
+As a toy example, use a data subset:
+
+```{r, echo=FALSE,fig.height=4,fig.width=4}
+(reactionREd <- reaction[2:4,])
+plot(reactionREd$Age, reactionREd$Reaction.Time, pch = 20, col = 1)
+abline(lm(Reaction.Time ~ Age, data = reactionREd))
+```
+
+- *If $H_0$ is true*: No linear relationship between $X$ and $Y$
+- Observed trend is due to chance
+- Any other pairing of $x_i$ and $y_i$ was equally likely
+- Generate hypothetical datasets by permuting $Y$ observations
+- How many equally likely datasets exist with observed $X$ and $Y$?
+$3 \times 2 \times 1 = 3! = 6$ possible datasets.
+
+**Remark**: We only assume $Y$ is a random variable. The key assumption is exchangeability: the joint density $f(y_1,\ldots,y_n)$ is invariant to permutations of $y_1,\ldots,y_n$.
+
+### All Potential Datasets
 
 ```{r, echo=FALSE}
-make_perm_plot<-function(yperm=sample(reaction$Age),reactionPerm=reaction){
-  reactionPerm$Reaction.Time=yperm
-  model=lm(Reaction.Time~Age,data=reactionPerm)
-  plot(reactionPerm$Age,reactionPerm$Reaction.Time,pch=20,col=3,cex=2,xlab="Age",ylab="Reaction.Time")
-  coeff=round(coefficients(model),2)
-  title(paste("Y=",coeff[1],"+",coeff[2],"*X"))
-  abline(model,col=2)
+make_perm_plot <- function(yperm = sample(reaction$Age), reactionPerm = reaction) {
+  reactionPerm$Reaction.Time <- yperm
+  model <- lm(Reaction.Time ~ Age, data = reactionPerm)
+  plot(reactionPerm$Age, reactionPerm$Reaction.Time, pch = 20, col = 3, cex = 2,
+       xlab = "Age", ylab = "Reaction.Time")
+  coeff <- round(coefficients(model), 2)
+  title(paste("Y =", coeff[1], "+", coeff[2], "* X"))
+  abline(model, col = 2)
 }
 
-Y=cbind (reactionREd[,3],reactionREd[c(1,3,2),3],reactionREd[c(2,1,3),3],reactionREd[3:1,3],reactionREd[c(2,3,1),3],reactionREd[c(3,1,2),3])
-X=reactionREd$Age
+Y <- cbind(reactionREd[,3], reactionREd[c(1,3,2),3], reactionREd[c(2,1,3),3],
+           reactionREd[3:1,3], reactionREd[c(2,3,1),3], reactionREd[c(3,1,2),3])
+X <- reactionREd$Age
 
-# Y=cbind (c (2,1,4), c (1,2,4), c (1,4,2),
-# c (4,1,2), c (4,2,1), c (2,4,1)) * 10
-# X=1: 3
-# cbind (X=X, Y)
-par (mfrow=c (2,3))
-for (i in 1: 6){
-make_perm_plot(Y[,i],reactionPerm = reactionREd)
+par(mfrow = c(2,3))
+for(i in 1:6) {
+  make_perm_plot(Y[,i], reactionPerm = reactionREd)
 }
-par (mfrow=c (1,1))
+par(mfrow = c(1,1))
 ```
 
-<!-- --- -->
+#### In Our Complete Dataset
 
-#### In our data set
+Apply the same principle to the full dataset...
 
-We apply the same principle to the complete dataset...
+How many permutations of $y_1,\ldots,y_n$ are possible? $n! = 10! = 3,628,800$.
 
-How many permutations of the vector $y_1,\ldots,y_n$ are possible? $n!=10!=3628800$.
+Manageable, but with $n = 20$? $20! = 2.43 \times 10^{18}$ - too large!
 
-big, perhaps not too big ... but what happen with, for example, $n=20$? We got $20!=2.432902e+18$. This is too big, definitely! 
+Calculate a smaller but sufficiently large number $B$ of random permutations.
 
-We calculate a smaller (but sufficiently large) $B$ of random permutations. 
+Examples:
 
-here some example
-
-<!-- --- -->
-
-**`Age` vs a permutations of `Reaction.Time`**
+**`Age` vs Permuted `Reaction.Time`**
 
 ```{r, results='asis', echo=FALSE}
-
-par(mfrow=c(2,3))
+par(mfrow = c(2,3))
 for(i in 1:6)
   make_perm_plot()
-par(mfrow=c(1,1))
+par(mfrow = c(1,1))
 ```
-
-<!-- --- -->
 
 ```{r,echo=FALSE}
-B=5000
+B <- 5000
 ```
 
-We repeat `r B` times and we look at the histogram of the $\hat{\beta}_1$
+Repeat `r B` times and examine the $\hat{\beta}_1$ histogram:
 
 ```{r}
-# beta_1 estimated on the observed data:
-beta1=coefficients(lm(Reaction.Time~Age,data=reaction))[2]
+# beta_1 estimated on observed data
+beta1 <- coefficients(lm(Reaction.Time ~ Age, data = reaction))[2]
 
-# function that permutes the y values and calculates the coeff beta_1
-my.beta.perm <- function(Y,X){
-  model=lm(sample(Y)~X)
+# Function to permute y and calculate beta_1
+my.beta.perm <- function(Y, X) {
+  model <- lm(sample(Y) ~ X)
   coefficients(model)[2]
 }
 
-#replicate it B-1 times
-beta.perm= replicate(B,my.beta.perm(reaction$Reaction.Time, reaction$Age ))
+# Replicate B-1 times
+beta.perm <- replicate(B, my.beta.perm(reaction$Reaction.Time, reaction$Age))
 ```
-
-<!-- ---- -->
 
 ```{r,echo=FALSE}
-
-#the observed dataset is one of the possible permutations
-beta.perm=c(beta1,beta.perm)
-# str(beta.perm)
-hist(beta.perm,50)
-points(beta1,0,lwd=3,col=1)
+# Include observed dataset among permutations
+beta.perm <- c(beta1, beta.perm)
+hist(beta.perm, 50)
+points(beta1, 0, lwd = 3, col = 1)
 ```
 
-### How likely WAS $\hat{\beta}_1 ^{obs}$?
+### How Likely Was $\hat{\beta}_1 ^{obs}$?
 (before the experiment!)
 
-How likely was it to get a $\leq \hat{\beta}_1 ^{obs}$ value among the many possible values of $\hat{\beta}_1 ^{*b}$ (obtained by permuting data)?
-
+What was the probability of obtaining a value $\geq \hat{\beta}_1 ^{obs}$ among possible $\hat{\beta}_1 ^{*b}$ values (from permuted data)?
 
 Remarks:
+- $\hat{\beta}_1 ^{*b} < \hat{\beta}_1 ^{obs}$ (closer to 0): Less evidence against $H_1$ than $\hat{\beta}_1 ^{obs}$
+- $\hat{\beta}_1 ^{*b} \geq \hat{\beta}_1 ^{obs}$: Equal or stronger evidence for $H_1$ than $\hat{\beta}_1 ^{obs}$
 
-- $\hat{\beta}_1 ^{* b}< \hat{\beta}_1 ^{obs}$ (closer to 0): less evidence against $H_1$ than $\hat{\beta}_1 ^{obs}$
-- $\hat{\beta}_1 ^{* b} \geq \hat{\beta}_1 ^{obs}$: equal or more evidence towards $H_1$ than $\hat{\beta}_1 ^{obs}$
+### P-value Calculation
 
+Out of B = `r B` permutations, we obtained `r sum(beta.perm <= beta1)` cases where $\hat{\beta}_1 ^{*b} \leq \hat{\beta}_1 ^{obs}$.
 
-### Calculation of the p-value
+The p-value (significance) is:
+$p = \frac{\#(\hat{\beta}_1 ^{*b} \geq \hat{\beta}_1 ^{obs})}{B} =$ `r (p <- sum(beta.perm >= beta1)/B)`
 
-Over B=`r B` permutations we got `r sum (beta.perm <= beta1)` times a 
-$\hat{\beta}_1 ^{* b} \leq \hat{\beta}_1 ^{obs}$.
+($\hat{\beta}_1 ^{obs}$ counts as one random permutation)
 
-The p-value (significance) is
-$p=\frac{\# (\hat{\beta}_1 ^{* b} \geq \hat{\beta}_1 ^{obs})}{B} =$ `r (p=sum(beta.perm>= beta1)/B)`
-
-($\hat{\beta}_1 ^{obs}$ counts as a random permutation)
-<!-- ```{r} -->
-<!-- hst=hist(beta.perm,plot=FALSE,50) -->
-<!-- hist(beta.perm,col=(hst$breaks[-1]<=beta1)+2, probability=TRUE ,50) -->
-<!-- points(beta1,0,lwd=3,col=1) -->
-<!-- ``` -->
-
-
- 
 ### Interpretation
 
-The probability of $p=P (\hat{\beta}_1 ^ * \geq \hat{\beta}_1=$ `r round (coefficients (model), 3)[2]` $| H_0)$ is equal to $p =$ `r p`, i.e. very small.  
-So, it was unlikely to get a value like this **IF $H_0$ is true**.
+The probability $P(\hat{\beta}_1^* \geq \hat{\beta}_1 =$ `r round(coefficients(model), 3)[2]` $| H_0) = p =$ `r p` is very small. It was unlikely to obtain such a value **if $H_0$ is true**.
 
-Neyman-Pearson's approach has made common the use of a significance threshold for example $\alpha=.05$ (or $=. 01$).
-When $p \leq \alpha$ rejects the hypothesis that there is no relationship between X and Y ($H_0$). If so, we are inclined to think that $H_1$ is true (there is a positive relationship).
+The Neyman-Pearson approach established significance thresholds like $\alpha = .05$ (or $= .01$). When $p \leq \alpha$, we reject $H_0$ (no relationship). We then conclude $H_1$ is likely true (positive relationship).
 
 - Type I error: False Positive  
-the true hypo is $H_0$ (null correlation), BUT we accept $H_1$ (correlation is positive)
+True hypothesis is $H_0$ (no correlation), but we accept $H_1$ (positive correlation)
 - Type II error: False Negative  
-the true hypo is $H_1$ (positive correlation), BUT we do not reject $H_0$ (null correlation)
+True hypothesis is $H_1$ (positive correlation), but we fail to reject $H_0$ (no correlation)
 
+## Summary
 
-## To sum up
+**p-value**: Proportion of experiments providing equal or stronger evidence against $H_0$ compared to observed data.
 
-**p-value**: proportion of experiments providing equal or more evidence against $H_0$ with respect to observed data.
+To compute it, we need:
+- **Orbit $\mathcal{O}$**
+- **Test statistic** ($T: \mathbb{R}^n \to \mathbb{R}$) quantifying evidence against $H_0$
+  - Higher values indicate stronger evidence against $H_0$
+  - Computing $T$ for each $\mathcal{O}$ element induces an ordering on $\mathcal{O}$
 
-To compute it, we need the 
-**Orbit $\mathcal{O}$** and a
-**Test statistic** ($T:\ \mathbb{R}^n\to\mathbb{R}$) quantifies the evidence against $H_0$
+In our example: $T = \hat{\beta}_1 = \hat{\sigma}_{xy}/\hat{\sigma}_{xx}$ (estimated slope). Higher slope indicates stronger evidence for $H_1$.
 
-- higher values provide more evidence against $H_0$
-- compute a test statistic for each element of the Orbit $\mathcal{O}$, this induces an ordering on $\mathcal{O}$.
+**Type I Error Control**
 
+We want to limit false discoveries (be conservative). Bound the probability of false discovery:
 
-In our example: $T=\hat\beta_1=\hat\sigma_{xy}/\hat\sigma_{xx}$ is the (estimated) slope.  
-Higher the slope, higher the evidence for $H_1$. 
+$P(\text{p-value} \leq \alpha | H_0) \leq \alpha$
 
-<!-- ---- -->
+This ensures that over many experiment replications, we find false correlations with probability $\alpha$ (e.g., $0.05 = 5\%$).
 
-**Type I error control**
-
-We want to guarantee not to get false relationships (a few false positives), better to be conservative. To make this, we want to bound the probability to make a false discovery:
-
-$P (p-value \leq \alpha | H_0) \leq \alpha$
-
-We built a machinery that in the long run (many replicates of the experiment) finds false correlations with probability $\alpha$ (e.g. $0.05=5\%$).
-
-
-### We make it in flip
+### Implementation in `flip`
 
 ```{r}
 library(flip)
-
-(res=flip(Reaction.Time~Age,data=reaction,tail=1))
-## compare also with
-# flip(Reaction.Time~Age,data=reaction,tail=1,statTest = "cor")
-# flip(Reaction.Time~Age,data=reaction,tail=1,statTest = "coeff")
+(res <- flip(Reaction.Time ~ Age, data = reaction, tail = 1))
+# Compare with:
+# flip(Reaction.Time ~ Age, data = reaction, tail = 1, statTest = "cor")
+# flip(Reaction.Time ~ Age, data = reaction, tail = 1, statTest = "coeff")
 ```
-
-
-<!-- ---- -->
 
 ```{r}
 plot(res)
 ```
 
-<!-- ---- -->
+**Type I Error Control**
 
-**Type I error control**
+We want to guarantee few false positives. Bound false discovery probability:
 
-We want to guarantee not to get false relationships (a few false positives), better to be conservative. To make this, we want to bound the probability to make a false discovery:
+$P(\text{p-value} \leq \alpha | H_0) \leq \alpha$
 
-$P (p-value \leq \alpha | H_0) \leq \alpha$
+This ensures long-run false correlation discovery rate $\leq \alpha$ (e.g., 5%).
 
-We built a machinery that in the long run (many replicates of the experiment) finds false correlations with probability $\alpha$ (e.g. $0.05=5\%$).
+### Two-sided Alternatives
 
+$H_1: \beta_1 > 0$ (positive relationship) requires a priori justification.
 
-### Composite alternatives (bilateral)
+More commonly, the two-sided alternative is appropriate:
+$H_1: \beta_1 \neq 0$ (relationship exists, direction unspecified)
 
-The hypothesis $H_1: \ \beta_1 >0$ (the relation is positive) must be justified with a priori knowledge.
+We consider both very small and very large estimated coefficients as anomalous ('far from 0').
 
+P-value:
+$p = \frac{\#(|\hat{\beta}_1^{*b}| \geq |\hat{\beta}_1^{obs}|)}{B} =$ `r (sum(beta.perm >= beta1) + sum(beta.perm <= -beta1))/B`
 
-More frequently, the Alternative hypothesis is appropriate:
-$H_1: \ \beta_1 \neq 0$
-(there is a relationship, I do not assume the direction)
-
-I consider anomalous coefficients estimated as very small but also very large ('far from 0').
-The p-value is 
-
-$p=\frac{\#(|\hat{\beta}_1^{*b} | \geq|\hat{\beta}_1^{obs}|)}{B}=$ `r (sum(beta.perm>=beta1)+sum(beta.perm<=-beta1))/B`
-
-(remark: the observed test stat is included among the permuted one)
-
-<!-- ---- -->
+(Note: observed test statistic included among permutations)
 
 In `flip`:
+
 ```{r}
 library(flip)
-(res=flip(Reaction.Time~Age,data=reaction,tail=0,perms=5000))
+(res <- flip(Reaction.Time ~ Age, data = reaction, tail = 0, perms = 5000))
 ```
-
-
-<!-- ---- -->
 
 ```{r}
 plot(res)
 ```
 
-## A slightly more formal approach
+## A More Formal Approach
 
-(see also Pesarin, 2001; [Hemerik \& Goeman, 2018](link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf) )
+(See also Pesarin, 2001; [Hemerik & Goeman, 2018](https://link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf))
 
-Let $Y$ be data taking values in a sample space $\mathcal{Y}$. Let $\Pi$ be a -- usually finite -- set of transformations
-$\pi : \mathcal{Y} \rightarrow \mathcal{Y}$, such that $\Pi$ is a **group** with respect to the operation of composition of
-transformations, that is:   
+Let $Y$ be data in sample space $\mathcal{Y}$. Let $\Pi$ be a (usually finite) set of transformations $\pi: \mathcal{Y} \to \mathcal{Y}$ forming a **group** under composition:
+- Contains identity
+- Every element has an inverse
+- Closed: if $\pi_1, \pi_2 \in \Pi$, then $\pi_1 \circ \pi_2 \in \Pi$
 
-- it contains identity, 
-- every element has an inverse in the group,
-- closure: if $\pi_1,\pi_2\in\Pi$: $\pi_1\circ\pi_2\in\Pi$
-
-(e.g. $\Pi$ set of all possible permutations)
+(e.g., $\Pi$ = all possible permutations)
 
 **Null Hypothesis**  
-$H_0:$ $Y\sim P\in \Omega_0$
+$H_0: Y \sim P \in \Omega_0$
 
-**Randomization Hypothesis**  Under the null hypothesis,
-the distribution of $Y$ is invariant under the transformations in $\Pi$; that is, for
-every $\pi$ in $\Pi$, $\pi Y$ and $Y$ have the same distribution whenever $Y$ has distribution P in $\Omega_0$.
+**Randomization Hypothesis** Under $H_0$, the distribution of $Y$ is invariant under $\Pi$: for every $\pi \in \Pi$, $\pi Y$ and $Y$ have the same distribution when $Y \sim P \in \Omega_0$.
 
-(See also Lehmann, E. L., & Romano, J. P. (2006). Testing statistical hypotheses. Springer Science & Business Media.)
+(See also Lehmann & Romano, 2006. *Testing Statistical Hypotheses*. Springer.)
 
-<!-- ---- -->
+**Test statistic** $T(Y): \mathbb{R}^n \to \mathbb{R}$
 
-**Test statistic** $T(Y):\ \mathbb{R}^n\to\mathbb{R}$
-
-<!-- ---- -->
-
-$T^{(k)}(Y)$ is the $\lceil(1-\alpha)|\Pi|\ \rceil$-th sorted value of $T(\pi Y)$
+$T^{(k)}(Y)$ is the $\lceil(1-\alpha)|\Pi|\rceil$-th sorted value of $T(\pi Y)$
 
 Define the test:
-\begin{equation}
+\[
 \phi(Y) = 
 \begin{cases} 
-1 & \text{if } T(Y)> T^{(k)}(Y) \\
-0 & \text{if } otherwise
+1 & \text{if } T(Y) > T^{(k)}(Y) \\
+0 & \text{otherwise}
 \end{cases}
-\end{equation}
+\]
 
-
-**Theorem**: Under $H_0$, $E_P(\phi(Y))=\alpha$, that is $P(T(Y) > T^{(k)}) \leq \alpha$.
-
-<!-- **Proof**   -->
-<!-- By the group structure, $\pi\Pi = \Pi$ for all $\pi \in \Pi$. Hence, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Let $h$ have the uniform distribution on $\Pi$. Then, under $H_p$, the rejection probability is -->
-<!-- $$ -->
-<!-- P\{T(Y) > T^{(k)}(Y)\} = P\{T(hY) > T^{(k)}(hY)\} = P\{T(hY) > T^{(k)}(Y)\}. -->
-<!-- $$ -->
-<!-- The first equality follows from the null hypothesis, and the second equality holds since $T^{(k)}(Y) = T^{(k)}(hY)$. Since $h$ is uniform on $\Pi$, the above probability equals -->
-<!-- $$ -->
-<!-- \mathbb{E}_P\left[(\#\Pi)^{-1} \cdot \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\}\right] \leq \alpha, -->
-<!-- $$ -->
-<!-- as was to be shown. -->
+**Theorem**: Under $H_0$, $E_P(\phi(Y)) = \alpha$, i.e., $P(T(Y) > T^{(k)}) \leq \alpha$.
 
 **Proof**
 
-For each $Y \in \mathcal{Y}$, define $O_y$ to be the orbit of $Y$, which is the set $\{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}$.
+For each $Y \in \mathcal{Y}$, define orbit $O_Y = \{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}$.
 
-Let $A = \{Y \in \mathcal{Y} : T(Y) > T^{(k)}(Y)\}$ be the set of elements of the sample space that lead to rejection. Suppose $H_p$ holds. By the group structure, $\Pi\pi = \Pi$ for all $\pi \in \Pi$. Consequently, $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Thus, 
-$$\#\{\pi   \in \Pi  : \pi Y \in A\} = \#\{\pi   \in \Pi  : T(\pi Y) > T^{(k)}(\pi Y)\} = \#\{\pi   \in \Pi  : T(\pi Y) > T^{(k)}(Y)\} \leq \alpha |O_Y|$$.
+Let $A = \{Y \in \mathcal{Y} : T(Y) > T^{(k)}(Y)\}$ be the rejection set. Under $H_0$, by group structure, $\Pi\pi = \Pi$ for all $\pi \in \Pi$, so $T^{(k)}(\pi Y) = T^{(k)}(Y)$ for all $\pi \in \Pi$. Thus:
+\[
+\#\{\pi \in \Pi : \pi Y \in A\} = \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(\pi Y)\} = \#\{\pi \in \Pi : T(\pi Y) > T^{(k)}(Y)\} \leq \alpha |O_Y|
+\]
 
-Endow the space of orbits with the $\sigma$-algebra that it inherits from the $\sigma$-algebra on $\mathcal{Y}$. Analogously to the proof of Theorem 15.2.2 in Lehmann (2005), we obtain
-$$
-P(Y \in A | O_Y) = \frac{|A|}{|O_Y|}.
-$$
-By the argument above, this is bounded by $\alpha$. Hence,
-$$
+Endow orbits with inherited $\sigma$-algebra. As in Lehmann (2005, Theorem 15.2.2):
+\[
+P(Y \in A | O_Y) = \frac{|A|}{|O_Y|}
+\]
+Bounded by $\alpha$. Hence:
+\[
 P(Y \in A) = \mathbb{E}\{P(Y \in A | O_Y)\} \leq \alpha
-$$
-as was to be shown.
-
-
+\]
 
 **Alternative Proof**
 
-By construction, $\sum_{\pi\in \Pi} \phi(\pi Y)=|\Pi|\alpha$.
-Therefore $|\Pi|\alpha= E_P(\sum_{\pi\in\Pi}\phi(\pi Y))= \sum_{\pi\in\Pi}E_P(\phi(\pi Y))$
+By construction, $\sum_{\pi \in \Pi} \phi(\pi Y) = |\Pi|\alpha$. Thus:
+\[
+|\Pi|\alpha = E_P\left(\sum_{\pi \in \Pi} \phi(\pi Y)\right) = \sum_{\pi \in \Pi} E_P(\phi(\pi Y))
+\]
 
-Next, by the null hypothesis:
-$E_P(\phi(Y))=E_P(\phi(\pi Y))$,  
-so that
-$|\Pi|\alpha= \sum_{\pi\in\Pi}E_P(\phi(Y))=|\Pi|E_P(\phi(Y))$
-gives   
-$E_P(\phi(Y))=\alpha$
+By null hypothesis: $E_P(\phi(Y)) = E_P(\phi(\pi Y))$, so:
+\[
+|\Pi|\alpha = \sum_{\pi \in \Pi} E_P(\phi(Y)) = |\Pi| E_P(\phi(Y))
+\]
+giving $E_P(\phi(Y)) = \alpha$.
 
+### Further Notes on Permutation Testing
 
-(See also Lehmann, E. L., & Romano, J. P. (2006). Testing statistical hypotheses. Springer Science & Business Media.)
+**Orbit**: $\mathcal{O} = \{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}$
 
-
-### More about permutation testing
-
-<!-- The null hypothesis $H_0$ implies that the joint distribution -->
-<!-- of the test statistics $T(\pi Y), \pi \in \Pi$, is invariant under all transformations in $\Pi$ of $Y$. -->
-<!-- That is, writing $\Pi = \{\pi_1,\ldots, \pi_{|\Pi|}\}$, under $H_0$: -->
-
-<!-- $$T(\pi_1 Y), \ldots, T(\pi_{|\Pi|}Y) \overset{d}{=} T(\pi_1g Y), \ldots, T(\pi_{|\Pi|}gY)$$ -->
-<!-- for all $\pi    \in \Pi$. -->
-
-<!-- Note that it holds when for all $\pi \in \Pi$: $Y \overset{d}{=}\pi Y$. -->
+i.e. $\mathcal{O} = \{\text{all permutations of observed data } \mathbf{y}\} = \{\mathbf{y}^*: \pi^* \circ \mathbf{y}\}$
 
 
-<!-- ---- -->
+#### Exchangeability
 
-<!-- $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the vector of observed data -->
+**Exchangeability Assumption**: Under $H_0$, observations are exchangeable: e.g., $f(y_1, y_2) = f(y_2, y_1)$.
 
-**Randomization Hypothesis and Group structure**  
+Therefore the $\mathcal{O}$ is a set of samples in $\mathcal{Y}$ sharing the same likelihood under the null hypothesis: 
+$\mathcal{O} = \{\pi \mathbf{y}: f_{H_0}(\pi \mathbf{y}) = f_{H_0}(\mathbf{y})\}$
 
-Randomization Hypothesis applied to $\pi \in \Pi$ having a Group structure implies 
-$$
-(T(\pi_1Y),\ldots,T_1(\pi_{|\mathcal{O}|}Y))=(T(\pi_1\pi Y),\ldots,T_1(\pi_{|\mathcal{O}|}\pi Y))
-$$
-for each $\pi \in \Pi$.
+($|\mathcal{O}|$ = number of elements)
 
-
-**Orbit** of $\mathcal{O}$: 
-$$\mathcal{O}=\{\pi Y : \pi \in \Pi\} \subseteq \mathcal{Y}.$$
-
-(losely) the set of all samples having the same likelihood under $H_0$.  
-$$\mathcal{O}=\{\pi \mathbf{y}:\ f(\pi \mathbf{y})=f(\mathbf{y}) \}$$
-($|\mathcal{O}|$ number of elements of $\mathcal{O}$)
-
-If we assume exchangeability of observations, then:
-$$\mathcal{O}=\{\textrm{all permutations of the observed data }\mathbf{y}\} = \{\mathbf{y}^*:\pi^*\circ\mathbf{y}\}$$
-
-<!-- ---- -->
-
-<!-- ---- -->
-
-**Remark about assumption of exchangeability**: This means that, Under the Null Hypothesis, observations within subject are assumed to be exchangeable: e.g. $f(y_1,y_2)=f(y_2,y_1)$. 
+With exchangeability:
 
 
-This assumption is always true as long as observations:  
+**Proof Intuition** (alternative Type I error control proof):
 
-- are **identically distributed**,   
-- have the **same dependence**, e.g. the same correlation.   
+\[
+f(\mathbf{y}|\mathcal{O}) = \frac{f(\mathbf{y} \cap \mathcal{O})}{f(\mathcal{O})} = \frac{f(\mathbf{y})}{f(\mathcal{O})} = \frac{f(\mathbf{y})}{f(\cup_{y \in \mathcal{O}} y)} = \frac{1}{|\mathcal{O}|} \ \forall \ \mathbf{y} \in \mathcal{O}
+\]
+Each permutation is equally likely in $\mathcal{O}$ (due to group structure).
 
-
-Parametric $t$-test and linear models assumes independence (more stringent than 'same dependence'), and normality of the errors, i.e. more severe assumptions than permutation approach.
-
-When normality is not met, the parametric approach only provides asymptotic control of the tye I error, while permutation approach provides exactness.
-
-
-
-**An Intuition about the proof** for an alternative proof of the control of the type I error
-
-$$f(\mathbf{y}|\mathcal{O})=\frac{f(\mathbf{y}\cap\mathcal{O})}{f(\mathcal{O})}=
-\frac{f(\mathbf{y})}{f(\mathcal{O})}=
-\frac{f(\mathbf{y})}{f(\cup_{y\in\mathcal{O}}y)}=\frac{1}{|\mathcal{O}|}\ \forall\ \mathbf{y}\in \mathcal{O}$$
-i.e. each permutation is equally likely in the Orbit $\mathcal{O}$.
-
-(due to group structure)
 \[
 \begin{aligned}
-&E(\phi(Y)|\mathbf{y}\in\mathcal{O}, H_0)=\\
-&P(T(\mathbf{y})> T^{(k)} | \mathbf{y}\in\mathcal{O}, H_0)=\\
-&=\int_{T^{(k)}}^{+\infty} f(T(\mathbf{y}))dT(\mathbf{y})=\\
-&=\sum_{\mathbf{y}\in\mathcal{O}} I(T(\mathbf{y})> T^{})/|\mathcal{O}|\leq \alpha
-\ \ \ \ \forall\mathcal{O}
+E(\phi(Y)|\mathbf{y} \in \mathcal{O}, H_0) &= P(T(\mathbf{y}) > T^{(k)} | \mathbf{y} \in \mathcal{O}, H_0) \\
+&= \int_{T^{(k)}}^{+\infty} f(T(\mathbf{y})) dT(\mathbf{y}) \\
+&= \sum_{\mathbf{y} \in \mathcal{O}} I(T(\mathbf{y}) > T^{(k)})/|\mathcal{O}| \leq \alpha \quad \forall \mathcal{O}
 \end{aligned}
 \]
 
-And now
-$E(\phi(\mathbf{y}))=\int_P E(\phi(\mathbf{y})|\mathbf{y}\in\mathcal{O}, H_0) d\mathbf{y}$
+Then:
+$E(\phi(\mathbf{y})) = \int_P E(\phi(\mathbf{y})|\mathbf{y} \in \mathcal{O}, H_0) d\mathbf{y}$
 
+#### Independence vs exchangeability 
 
+Always true if observations:  
+- Are **identically distributed**
+- Have **same dependence** (e.g., same correlation)
 
+Parametric $t$-tests and linear models assume independence (stricter than 'same dependence') and normality of errors—more stringent than permutation approach.
+
+When normality fails, parametric approaches only provide asymptotic Type I error control, while permutation provides exact control.
 
 ### Properties (see Pesarin, 2001)
 
-The theorem above proves that the permutation tests have **exact control of the type I error**, i.e. $P(p-value\leq \alpha|H_0)=\alpha$ assuming $\alpha\in \{1/|\mathcal{O}|,2/|\mathcal{O}|,\ldots,1\}$ - don't forget that the orbit $\mathcal{O}$ is a finite set and the cumulative distribution of $T(\pi \mathbf{y})$ is a step function.  
-When $\alpha$ has different values, the test is (slightly) conservative (or one need to use randomized tests that are not discussed in this course).
+The theorem proves permutation tests have **exact Type I error control**: $P(\text{p-value} \leq \alpha | H_0) = \alpha$, assuming $\alpha \in \{1/|\mathcal{O}|, 2/|\mathcal{O}|, \ldots, 1\}$ (since $\mathcal{O}$ is finite and $T(\pi \mathbf{y})$ distribution is a step function). For other $\alpha$ values, tests are slightly conservative (or require randomized tests, not discussed here).
 
-Further properties:  
+Additional properties:
+- **Unbiased**: $P(\text{p-value} \leq \alpha | H_1) > \alpha$
+- **Consistent**: $P(\text{p-value} \leq \alpha | H_1) \to 1$ as $n \to \infty$
+- Converges to parametric counterpart when it exists
 
-- The permutations tests are **Unbiased**: $P(p-value\leq \alpha|H_1)>\alpha$  
-- The test is **Consistent**: $P(p-value\leq \alpha|H_1)\to 1$ when $n\to\infty$  
-- The test converges to the parametric counterpart (when it exists)
+### Estimated p-values
 
+In practice, the p-value is often *estimated* using random permutations when it is computationally infeasible to compute the exact permutation p-value based on the entire permutation group.
 
-## A comparison (and relationships) with parametric linear model
+Random permutations are typically drawn uniformly from the orbit $\mathcal{O}$ without replacement. In this Section, $p$ denotes the exact p-value computed from the entire orbit $\mathcal{O}$, and $\hat{p}$ denotes its estimate computed from $B$ randomly sampled permutations.
 
-We can see that the histogram of the statistical tests (calculated on the permuted data) is well described by a **Gaussian **(normal) curve.
+If we force the first element to be the observed test statistic $T(Y)$, then $T(Y)$ becomes over-represented in the sample of $B$ elements from $\mathcal{O}$. Consequently, $E(\hat{p}) > p$, although $\lim_{B \to \infty} \hat{p} = p$.
 
-<!-- ---- -->
+An unbiased estimator of $p$, denoted $\hat{p}_0$, can be obtained by removing the constraint that $T(Y)$ must be included in the sample (i.e., by sampling permutations without including the observed statistic by default). This ensures $E(\hat{p}_0) = p$. However, as Phipson and Smyth (2010) thoroughly explain, using this unbiased estimator can be problematic because $\hat{p}_0$ is almost never stochastically larger than a uniform distribution on $[0,1]$ under $H_0$. This is evident from the fact that $\hat{p}_0$ typically has a positive probability of being exactly zero.
 
-```{r}
-hist(beta.perm,50,probability=TRUE,col=2)
-curve(dnorm(x,mean(beta.perm),sd(beta.perm)),add=TRUE,col=1,lwd=3)
-points(beta1,0,lwd=3,col=1)
-```
-
-### The (simple) linear parametric model
-We assume that the observed values are distributed around true values
-$\beta_0 + \beta_1 X$ according to a Gaussian law:
-
-$Y=\textrm{linear part} + \textrm{normal error}$
-
-$Y=\beta_0 + \beta_1 X + \varepsilon$
-
-**Assumptions of the linear model **
-
-- the $\boldsymbol{y_i=\beta_0 + \beta_1 x_i + \varepsilon_i}$
-the relationship between X and Y is truly linear, less than the error term $\varepsilon_i$
-<!-- -  the **observations ** are **independent** each others ( -->
-<!-- knowing the value of the $y_i$observation does not help me to predict the value of $y_{i + 1}$) -->
-- $\boldsymbol{\varepsilon_i \sim N (0, \sigma ^ 2), \ \forall i=1, \ldots, n}$ errors have normal distribution with zero mean and common variance (homoschedasticity: same variance).
+In any case, when computationally feasible, computing exact p-values is always preferable to estimating them.
 
 
+## Comparison with Parametric Linear Models
 
-### Hypothesis testing
-If these assumptions are true,
-
-$\hat{\beta_1} \sim N (\beta_1, \sigma ^ 2 / \sum (x_i- \bar{x}) ^ 2)$
-
-We calculate the test statistic:
-
-$t=\frac{\hat{\beta_1}}{std.dev\ \hat{\beta_1}}=\frac{\hat{\beta_1}}{\sqrt{\sum_{i=1} ^ n (y_i- \hat{y}_i) ^ 2 / \sum (x_i- \bar{x}) ^ 2 / (n-2)}}$
-
-If $H_0: \beta_1=0$, $t \sim t (n-2)$ is true
-
-On `reaction` data and $H_1: \beta_1 \neq 0$ (bilateral alternative)
-
+The histogram of test statistics from permuted data is well approximated by a **Gaussian** curve.
 
 ```{r}
-model=lm (Reaction.Time ~ Age, data=reaction)
-summary (model)
+hist(beta.perm, 50, probability = TRUE, col = 2)
+curve(dnorm(x, mean(beta.perm), sd(beta.perm)), add = TRUE, col = 1, lwd = 3)
+points(beta1, 0, lwd = 3, col = 1)
 ```
 
-Similar result, but much more assumptions!
+### Simple Linear Parametric Model
 
+Assume observed values distribute around true values $\beta_0 + \beta_1 X$ according to a Gaussian distribution:
 
-### Assumptions of a permutation test
+$Y = \text{linear part} + \text{normal error}$
 
-What model do we assume in a permutation test?
+$Y = \beta_0 + \beta_1 X + \varepsilon$
 
-Under the null hypo:
-$H_0:\ f(y)=f(y|x) \ \forall x$
+**Linear model assumptions**:
+- $y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$ (true linear relationship plus error)
+- $\varepsilon_i \sim N(0, \sigma^2)$ for all $i = 1, \ldots, n$ (normal errors with zero mean and constant variance/homoscedasticity)
 
-Under the alternative hypo no assumptions. in order to have power we hope that:
+### Hypothesis Testing
 
-$H_1:\ E(y|x)=\beta_0 + \beta_1x; \textrm{ with } \beta_1\neq 0 \textrm{ and for some } x$  
-that is:  
-$H_1: E(yx)\neq E(x)E(y)$
+If assumptions hold:
 
-No other assumptions on the distribution of $f(y|x)$ (normality, nor finite moments)
+$\hat{\beta}_1 \sim N(\beta_1, \sigma^2 / \sum (x_i - \bar{x})^2)$
 
-## Permutationally equivalent tests
+Test statistic:
+
+$t = \frac{\hat{\beta}_1}{\text{std.dev}(\hat{\beta}_1)} = \frac{\hat{\beta}_1}{\sqrt{\frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{\sum (x_i - \bar{x})^2} / (n-2)}}$
+
+If $H_0: \beta_1 = 0$ is true, $t \sim t(n-2)$.
+
+For `reaction` data with $H_1: \beta_1 \neq 0$ (two-sided):
+
+```{r}
+model <- lm(Reaction.Time ~ Age, data = reaction)
+summary(model)
+```
+
+Similar result, but with many more assumptions!
+
+### Permutation Test Assumptions
+
+What model do permutation tests assume?
+
+Under $H_0$: $f(y) = f(y|x) \ \forall x$
+
+Under $H_1$: No assumptions. For power, we hope:
+$H_1: E(y|x) = \beta_0 + \beta_1 x$ with $\beta_1 \neq 0$ for some $x$  
+i.e., $H_1: E(yx) \neq E(x)E(y)$
+
+No other assumptions about $f(y|x)$ distribution (normality, finite moments, etc.).
+
+## Permutationally Equivalent Tests
 
 ```{r}
 set.seed(1)
-(res_cor=flip(Reaction.Time~Age,data=reaction,statTest = "cor"))
+(res_cor <- flip(Reaction.Time ~ Age, data = reaction, statTest = "cor"))
 set.seed(1)
-(res_t=flip(Reaction.Time~Age,data=reaction,statTest = "t"))
+(res_t <- flip(Reaction.Time ~ Age, data = reaction, statTest = "t"))
 
-plot(res_cor@permT,res_t@permT,pch=20,col=2)
+plot(res_cor@permT, res_t@permT, pch = 20, col = 2)
 ```
-
 
 ### Conclusion
 
-**The permutation tests**:
-
-- Different from bootstrap methods. The former are extractions without reintegration, the latter with. The former have almost optimal properties and have (almost always) an exact control of the first type errors.
-- They constitute a general approach and are applicable in many contexts. Very few assumptions.  
-- some dedicated R packages: 
-    * `coin` <http://cran.r-project.org/web/packages/coin/index.html>
-    * `permuco` <https://cran.r-project.org/web/packages/permuco/index.html>
-    * `flip` <http://cran.r-project.org/web/packages/flip/index.html> (the development version is on github <https://github.com/livioivil/flip>)
-    * `flipscores` <http://cran.r-project.org/web/packages/flipscores/index.html> (the development version is on github <https://github.com/livioivil/flipscores>)
-    * `multcomp` <https://cran.r-project.org/web/packages/multcomp/index.html>
+**Permutation tests**:
+- Different from bootstrap methods (permutation: without replacement; bootstrap: with replacement). Permutation tests have optimal properties and (usually) exact Type I error control.
+- General approach applicable in many contexts with minimal assumptions.
+- Dedicated R packages:  
+    * `coin` <http://cran.r-project.org/web/packages/coin/index.html>  
+    * `permuco` <https://cran.r-project.org/web/packages/permuco/index.html>  
+    * `flip` <http://cran.r-project.org/web/packages/flip/index.html> (development: <https://github.com/livioivil/flip>)  
+    * `flipscores` <http://cran.r-project.org/web/packages/flipscores/index.html> (development: <https://github.com/livioivil/flipscores>)  
+    * `multcomp` <https://cran.r-project.org/web/packages/multcomp/index.html>  
     * `GFD` <https://cran.r-project.org/web/packages/GFD/index.html>
-    
-    
 
-# Some special cases
+# Special Cases
 
-## Rank-correlation
+## Rank Correlation
 
-- $n$ observations from $y$, we are interested on $F(y|x)$
-    - we don't need $y_1$ and $y_2$ do be continuous, we don't even need to have finite moments (usual minimal assumption).
-
-- Hypotheses
-    - $H_0: F(y|x)=F(y|x')\ \forall x,x'$  
-    - $H_1: \exists \ x< x' : F(y|x)< F(y|x')$ or directional such as: $H_1: \exists x,x' F(y_1)\neq F(y_2)$
-
-- Test Statistic: rank-correlation
-     
-
+- $n$ observations of $y$, interest in $F(y|x)$
+    - Don't need $y_1$ and $y_2$ to be continuous or have finite moments
+- Hypotheses:
+  - $H_0: F(y|x) = F(y|x') \ \forall x, x'$  
+  - $H_1: \exists x < x' : F(y|x) < F(y|x')$ or directional alternatives  
+  - Test statistic: rank correlation
+  
 ```{r}
-(res=flip(Reaction.Time~Age,data=reaction,perms = 5000,statTest  = "rank"))
-
-# to see the rank correlation use the workaround:
-(res=flip(rank(reaction$Reaction.Time)~rank(reaction$Age),perms = 5000,statTest  = "cor"))
-
-
-(cor.test(reaction$Reaction.Time,reaction$Age,method="spe"))
-
+  (res <- flip(Reaction.Time ~ Age, data = reaction, perms = 5000, statTest = "rank"))
+  # Alternative using rank transformation:
+  (res <- flip(rank(reaction$Reaction.Time) ~ rank(reaction$Age), perms = 5000, statTest = "cor"))
+  (cor.test(reaction$Reaction.Time, reaction$Age, method = "spearman"))
 ```
-
-<!-- ---- -->
-
+  
 ```{r}
-plot(res)
+  plot(res)
 ```
-
-## The Two-independent-sample problem
-
-* Two samples: 
-    - $n_1$ observations from $y_1$  
-    - $n_2$ observations from $y_2$  
-    - we don't need $y_1$ and $y_2$ do be continuous, we don't even neeD to have second (nor higher order) finite moments, which is the usual minimal assumption.
-
-* Hypotheses
-    - $H_0: F(y_1)=F(y_2)$  
-    - $H_1: F(y_1)\neq F(y_2)$  
-    (or directional such as: $H_1: F(y_1)<F(y_2)$)
-
-<!-- ---- -->
-
-* Test Statistic: 
-     - Standardized mean difference (t-statistic)  
-     - Estimated slope coefficient (label of groups as dummy predictor)  
-     - other test statistic such as the (non standardized) mean difference are permutationally equivalent 
-
+  
+## Two Independent Samples Problem
+  
+  - Two samples: $n_1$ observations from $y_1$, $n_2$ from $y_2$
+    - No continuity or finite moment requirements
+  - Hypotheses:
+    - $H_0: F(y_1) = F(y_2)$  
+    - $H_1: F(y_1) \neq F(y_2)$ (or directional)
+  - Test statistics:
+    - Standardized mean difference (t-statistic)
+  - Estimated slope coefficient (group labels as dummy predictor)
+  - Other permutationally equivalent statistics
+  
 ```{r}
-data("seeds")
-seeds=na.omit(seeds)
-
-(res=flip(y~grp,data=seeds,perms = 5000))
-
-(summary(lm(y~grp,data=seeds)))
-
+  data("seeds")
+  seeds <- na.omit(seeds)
+  (res <- flip(y ~ grp, data = seeds, perms = 5000))
+  summary(lm(y ~ grp, data = seeds))
 ```
-<!-- ---- -->
-
+  
 ```{r}
-plot(res)
+  plot(res)
 ```
+  
 
-<!-- ---- -->
-
-### Rank test
-
-Can we use rank-based statistics?
-
-Yes, equivalent to rank-tests, we just rely on exact distribution instead of asymptotic one (and we have no limitations with ties).
-
-
+### Rank Test
+  
+  Can use rank-based statistics? Yes—equivalent to rank tests but with exact distribution (no tie limitations).
+  
 ```{r}
-(res=flip(y~grp,data=seeds,statTest = "rank",perms=5000))
-
-(wilcox.test(y~grp,data=seeds))
+  (res <- flip(y ~ grp, data = seeds, statTest = "rank", perms = 5000))
+  wilcox.test(y ~ grp, data = seeds)
 ```
-
-## Chi square and other cathegorical methods
-
-
+  
+## Chi-square and Other Categorical Methods
+  
 ```{r}
-data("seeds")
-seeds$Germinated=!is.na(seeds$x)
-seeds$Germinated=factor(seeds$Germinated)
-seeds$grp=factor(seeds$grp)
-
-
-table(seeds$grp,seeds$Germinated)
-
+  data("seeds")
+  seeds$Germinated <- !is.na(seeds$x)
+  seeds$Germinated <- factor(seeds$Germinated)
+  seeds$grp <- factor(seeds$grp)
+  table(seeds$grp, seeds$Germinated)
 ```
-
-<!-- ---- -->
-
-
+  
 ```{r}
-chisq.test(seeds$grp,seeds$Germinated)
-
-(res=flip(Germinated~grp,data=seeds,statTest = "Chisq",perms=5000))
+  chisq.test(seeds$grp, seeds$Germinated)
+  (res <- flip(Germinated ~ grp, data = seeds, statTest = "Chisq", perms = 5000))
 ```
-<!-- --- -->
+  
+```{r,fig.height=5,fig.width=5}
+  plot(res)
+```
+  
+  ...and Fisher's exact test:
 
 ```{r,fig.height=5,fig.width=5}
-plot(res)
-```
-
-<!-- --- -->
-
-... and the Fisher test:
-
-```{r,fig.height=5,fig.width=5}
-fisher.test(seeds$grp,seeds$Germinated)$p.value
-
-(flip(Germinated~grp,data=seeds,perms=5000))
+fisher.test(seeds$grp, seeds$Germinated)$p.value
+flip(Germinated ~ grp, data = seeds, perms = 5000)
 ```
 
 ## ANOVA (C-sample)
 
-e.g. 3 groups of `Age`: young $[18-35)$, middle age $[35-60)$, old $[60-100)$
+Example: 3 `Age` groups: young $[18-35)$, middle $[35-60)$, old $[60-100)$
 
-- C samples:  
-    - $n_i$ observations from $y_i$ ($i=1,\ldots,C$)
-    - we don't need $y_i$ do be continuous, we don't even need to have finite moments (usual minimal assumption)
-
-- Hypotheses  
-    - $H_0: F(y_i)=F(y_j)\ \forall (i,j)$  
-    - $H_1: \exists (i,j): \ F(y_i)\neq F(y_j)$ 
-
-
-- Test Statistic:  
-     - F-statistic  
-     - $R^2$  
-     - other test statistic such as the (non standardized) mean difference are permutationally equivalent 
-     - Rank-based is also possible
-
+- C samples: $n_i$ observations from $y_i$ ($i=1,\ldots,C$)
+    - No continuity or finite moment requirements
+- Hypotheses:
+    - $H_0: F(y_i) = F(y_j) \ \forall (i,j)$  
+    - $H_1: \exists (i,j): F(y_i) \neq F(y_j)$
+- Test statistics:
+    - F-statistic
+    - $R^2$
+    - Other permutationally equivalent statistics
+    - Rank-based alternatives
 
 ```{r}
-reaction$AgeCateg=cut(reaction$Age,c(18,35,65,100),right = FALSE)
-  
-(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 5000,statTest  = "ANOVA"))
-
-summary(lm(Reaction.Time~AgeCateg,data=reaction))
-
+reaction$AgeCateg <- cut(reaction$Age, c(18, 35, 65, 100), right = FALSE)
+(res <- flip(Reaction.Time ~ AgeCateg, data = reaction, perms = 5000, statTest = "ANOVA"))
+summary(lm(Reaction.Time ~ AgeCateg, data = reaction))
 ```
-
 
 ### Stochastic Ordering
-* Same assumptions of ANOVA  
-* Hypotheses  
-    - same null hypo $H_0: F(y_i)=F(y_j)\ \forall (i,j)$  
-    - BUT $H_1: \exists (i,j): \ F(y_i)< F(y_j)$ (or $>$)
 
-(more details on NPC later)
+- Same assumptions as ANOVA
+- Hypotheses:
+    - Same $H_0: F(y_i) = F(y_j) \ \forall (i,j)$
+    - But $H_1: \exists (i,j): F(y_i) < F(y_j)$ (or $>$)
+
+(More details on NPC later)
 
 ```{r}
-(res=flip(Reaction.Time~AgeCateg,data=reaction,perms = 5000,tail=1))
+(res <- flip(Reaction.Time ~ AgeCateg, data = reaction, perms = 5000, tail = 1))
 npc(res)
 ```
 
+## Stratified Permutations (Discrete Nuisances)
 
-## Stratified permutations (discrete nuisances)
+Test $X=$ `Age` with $Z =$ `Gender` as nuisance in `reaction` data.
 
-What if we want to test $x=$ `Age` also using $z=$ `Gender` as nuisance in the `reaction` data set?
+Under $H_0$: $f(y|x,z) = f(y|x',z) = f(y|z) \ \forall (x,x')$
 
-Under the null hypothesis:
- $f(y|x,z)=f(y|x',z)=f(y|z) \ \forall (x,x')$
+Thus, under $H_0$, $f(y_i) = f(y_j)$ only if $z_i = z_j$ (same gender).
 
-Therefore, even under the $H_0$, it holds $f(y_i)=f(y_j)$ ONLY IF $z_i=z_j$ (obs $i$ and $j$ have the same gender).
+Can we permute as before? NO. Permute only within strata defined by $Z$.
 
-Can e permute same as in the previous cases? NO. We permute the observations only within the strata defined by $z$.
+**Remark**:
+- No linear nuisance effect assumption
+- Allow heteroscedastic errors across strata
 
-**Remark**:  
-- we don't assume linear effect of the nuisance,   
-- we also allow heteroscedastic errors among strata.
-
-(Test statistic remains the same)
-
-<!-- ```{r} -->
-<!-- library(flip) -->
-<!-- (res=flip(Reaction.Time~Age,data=reaction,perms=5000)) -->
-<!-- ``` -->
-
-<!-- ---- -->
-
-<!-- ## Stratified permutations (nuisances) -->
+Test statistic remains unchanged.
 
 ```{r}
-(res=flip(Reaction.Time~Age,Strata=~Gender,data=reaction,perms=5000))
+(res <- flip(Reaction.Time ~ Age, Strata = ~Gender, data = reaction, perms = 5000))
 ```
 
-<!-- ---- -->
-
-<!-- Stratified permutations (nuisances) -->
-Alternative model (more about NPC later):
+Alternative model (more on NPC later):
 
 ```{r}
-(res=flip(Reaction.Time~Age*Gender,Strata=~Gender,data=reaction,perms=5000))
+(res <- flip(Reaction.Time ~ Age*Gender, Strata = ~Gender, data = reaction, perms = 5000))
 npc(res)
 ```
+
+# Paired samples
+
+Understanding the Model: $Y=\gamma_0+\gamma_1 Z+\beta X+\varepsilon$
+
+Consider the model:
+- $Z$ represents Subject ID ($i=1,\ldots,n$)
+- $X$ indicates pre/post-treatment status (typically coded as 0 for pre-treatment, 1 for post-treatment)
+- Each subject in $Z$ has one pre-treatment and one post-treatment observation
+
+The null hypothesis to test is $H_0: \beta=0$.
+
+When permutations are constrained within levels of $Z$ (within each subject), this becomes equivalent to flipping the sign of the difference between post- and pre-treatment measurements. 
+
+Let $D$ be the vector of these differences with $n$ observations. The null hypothesis can be rewritten as $H_0: E(D)=0$.
+
+## Advantages of this approach
+
+One major advantage is that we don't need to estimate the Fisher Information (i.e., the residual variance). Let's demonstrate this with a paired t-test example:
+
+```{r}
+n <- 20
+y <- rnorm(n)
+
+# Generate sign flips for permutation testing
+FLIPS <- flipscores:::.make_flips(n, 1000)
+head(FLIPS)
+
+# Calculate test statistics for each permutation
+Tstat <- FLIPS %*% y
+flipscores:::.t2p(Tstat)
+
+# Monte Carlo simulation to check Type I error rate
+MCMC <- 10000
+Y <- matrix(rnorm(n * MCMC), n, MCMC)
+Tstat <- FLIPS %*% Y
+p.values <- apply(Tstat, 2, flipscores:::.t2p)
+mean(p.values < 0.05)
+
+# Lightweight t-test function
+t.test.light <- function(Y, tail = 1) {
+  sd <- apply(Y, 2, sd, na.rm = TRUE)
+  n <- nrow(Y)
+  ts <- colMeans(Y, na.rm = TRUE) / sd * sqrt(n)
+  pt(-ts, df = n - 1)
+}
+
+# Test with heteroscedastic data
+Y <- replicate(MCMC, rnorm(n, sd = exp(1:n)))
+Tstat <- FLIPS %*% Y
+p.values <- apply(Tstat, 2, flipscores:::.t2p)
+p.values_param <- t.test.light(Y)
+
+# Compare Type I error rates
+mean(p.values < 0.05)
+mean(p.values_param < 0.05)
+
+# Visualize p-value distributions
+plot.ecdf(p.values,lwd=2,asp=1)
+plot.ecdf(p.values_param,lwd=2, add = TRUE, col = 3)
+abline(0, 1, col = 2)
+```
+
+
+In this example, we compare a permutation-based approach (sign-flipping test) with a parametric t-test:
+
+1. **Permutation Test**: We generate sign flips that correspond to within-subject permutations. The test statistic is calculated for each sign-flipped version of the data, creating a null distribution against which we compare our observed statistic.
+
+2. **Parametric t-test**: We use a standard t-test that assumes normality and constant variance.
+
+3. **Heteroscedasticity Simulation**: The second part of the code generates data with increasing variance across observations (`sd = exp(1:n)`). This violates the constant variance assumption of the parametric t-test.
+
+The empirical cumulative distribution function (ECDF) plot shows how the p-values from both methods compare. Under the null hypothesis with correct assumptions, both should produce uniformly distributed p-values (follow the diagonal line). When assumptions are violated, the parametric test may produce inflated Type I error rates, while the permutation test maintains correct error control due to its distribution-free nature.
+
+**Key Insights**:
+- The permutation test doesn't require estimating residual variance
+- It remains valid even when parametric assumptions (like homoscedasticity) are violated
+- The method is particularly powerful for paired data where within-subject comparisons are natural
+- Sign-flipping is equivalent to permuting within subjects when testing for treatment effects in paired designs
+
+## Repeated measures and mixed models
+
+More properly this approach is known as Random coefficient Analysis / Group-level analysis
+
+
+- Basso \& Finos (2012). Exact Multivariate Permutation Tests for Fixed
+Effects in Mixed-Models. *Communications in Statistics - Theory and Methods*, 41: 2991 - 3001.
+
+- Finos \& Basso (2014) Permutation tests for between-unit fixed effects in multivariate
+generalized linear mixed models. *Stat Comput* 24, 941–952.
+
+A more complete approach:   
+
+- Andreella, Goeman, Hemerik, Finos (2025) Robust Inference for Generalized Linear Mixed Models: A “Two-Stage Summary Statistics” Approach Based on Score Sign Flipping. Psychometrika, 1-23.
 
 
 # Multivariate Testing
 
+## Seeds Data
 
-## Seeds data
 ```{r,message=FALSE}
 # install.packages("flip")
 library(flip)
 ```
 
-omit the `NA`s:
+Remove `NA`s:
 
 ```{r}
-data(seeds,package = "flip")
-seeds=na.omit(seeds)
+data(seeds, package = "flip")
+seeds <- na.omit(seeds)
 seeds
 ```
 
+## Marginal vs Joint Distribution
 
-## Marginal vs Joint distribution
-Use a permutation methods to test if there is any difference between the two groups in `grp` on the two variables `x` and `y`:
+Use permutation methods to test for group differences (`grp`) on both `x` and `y`:
 
 ```{r}
 library(flip)
-res=flip(.~grp,data=seeds,flipReturn =list(permP=TRUE,permT=TRUE))
+res <- flip(. ~ grp, data = seeds, flipReturn = list(permP = TRUE, permT = TRUE))
 hist(res)
-# flipReturn =list(permP=TRUE,permT=TRUE) is not really needed, we will need it later
+# flipReturn = list(permP = TRUE, permT = TRUE) not strictly needed; useful later
 ```
 
-
-We can perform the two tests for the two variables separately. But we don't get the overall p-value (is there any difference among the ANY of the two variables?)
+We can test the two variables separately but lack an overall p-value (is there ANY difference?).
 
 ```{r}
 plot(res)
 ```
 
-What will we see next:  
-- how to combine the two p-values (e.g. using the Fisher Combining Function) to test the global hypothesis  
-- How to use a closed testing procedure to adjust the 2 p-values: which variables?.
+Next we'll see:
+                                                         - How to combine p-values (e.g., Fisher's combining function) for global hypothesis testing
+- How to use closed testing procedures to adjust p-values: which variables differ?
 
+## Rejection Regions (and Overall Testing)
 
-## Rejection regions (and overall testing)
-
-In the univariate setting it is easy to define what is *far from the null hypothesis* (i.e. usually from a value of 0 of the test statistic), while in the multivariate setting, there is not only one answer (nor a better one).
-
+In univariate settings, defining 'far from null' (usually from test statistic = 0) is straightforward. In multivariate settings, there are multiple (no uniformly best) approaches.
 
 ```{r}
-
 # install.packages("plotrix")
-library("plotrix") 
-res.sumt2=npc(res,"sumT2",flipReturn=list(permP=TRUE,permT=TRUE))
-limsumt2=res.sumt2@permT[which.min(abs(res.sumt2@permP-0.05))]
-res.sumt=npc(res,"sumT",flipReturn=list(permP=TRUE,permT=TRUE))
-limsumt=res.sumt@permT[which.min(abs(res.sumt@permP-0.05))]
-res.maxt=npc(res,"maxT",flipReturn=list(permP=TRUE,permT=TRUE))
-limmaxt=res.maxt@permT[which.min(abs(res.maxt@permP-0.05))]
+library("plotrix")
+res.sumt2 <- npc(res, "sumT2", flipReturn = list(permP = TRUE, permT = TRUE))
+limsumt2 <- res.sumt2@permT[which.min(abs(res.sumt2@permP - 0.05))]
+res.sumt <- npc(res, "sumT", flipReturn = list(permP = TRUE, permT = TRUE))
+limsumt <- res.sumt@permT[which.min(abs(res.sumt@permP - 0.05))]
+res.maxt <- npc(res, "maxT", flipReturn = list(permP = TRUE, permT = TRUE))
+limmaxt <- res.maxt@permT[which.min(abs(res.maxt@permP - 0.05))]
 
-
-plot(res@permT[,1],res@permT[,2],col="#F2AD00",bg="#F98400",pch=21,main="Some rejection region (alpha=.05)",asp=1)
-draw.circle(0, 0, limsumt2^.5,border="red")
-segments(c(limsumt,-limsumt,limsumt,-limsumt),c(0,0,0,0),
-         c(0,0,0,0),c(limsumt,-limsumt,-limsumt,limsumt),col="green")
-segments(c(limmaxt,-limmaxt,-limmaxt,limmaxt),c(limmaxt,limmaxt,-limmaxt,-limmaxt),
-         c(-limmaxt,-limmaxt,limmaxt,limmaxt),c(limmaxt,-limmaxt,-limmaxt,limmaxt),col="blue")
-legend("topright",legend=c("SumT^2","Sum |T|","maxT"),col=c("red","green","blue"),bty="n",lwd=2)
+plot(res@permT[,1], res@permT[,2], col = "#F2AD00", bg = "#F98400", pch = 21,
+     main = "Some Rejection Regions (alpha = .05)", asp = 1)
+draw.circle(0, 0, limsumt2^.5, border = "red")
+segments(c(limsumt, -limsumt, limsumt, -limsumt), c(0, 0, 0, 0),
+         c(0, 0, 0, 0), c(limsumt, -limsumt, -limsumt, limsumt), col = "green")
+segments(c(limmaxt, -limmaxt, -limmaxt, limmaxt), c(limmaxt, limmaxt, -limmaxt, -limmaxt),
+         c(-limmaxt, -limmaxt, limmaxt, limmaxt), c(limmaxt, -limmaxt, -limmaxt, limmaxt), col = "blue")
+legend("topright", legend = c("SumT^2", "Sum |T|", "maxT"),
+       col = c("red", "green", "blue"), bty = "n", lwd = 2)
 ```
 
-**REMARK** We can derive the distribution of the p-value by computing the p-value for each test statistic (i.e. computed on observed and permuted data). We get then the multivariate distribution of the p-values, which looks something like this one:
+**REMARK**: We can derive the p-value distribution by computing p-values for each test statistic (observed and permuted data). This yields the multivariate p-value distribution:
 
 ```{r}
-plot(res@permP,col="#F2AD00",bg="#F98400",pch=21,main="Joint Distribution of p-values",asp=1)
+plot(res@permP, col = "#F2AD00", bg = "#F98400", pch = 21,
+     main = "Joint Distribution of P-values", asp = 1)
 ```
-
-
 
 ### Fisher Combining Function
 
-We inspect the rejection regions of the two univariate tests and the one of Fisher combination.  
-The intersection of each univariate test with the Fisher region defines the rejection region of a closed testing - i.e. adjusted for multiple testing.
+Examine rejection regions for univariate tests and Fisher combination. Intersection of each univariate test with Fisher region defines closed testing rejection region (adjusted for multiple testing).
 
 ```{r,echo=FALSE}
-res.fisher=npc(res,"Fisher",flipReturn=list(permP=TRUE,permT=TRUE))
-Falpha5=res.fisher@permT[which.min(abs(res.fisher@permP-.05))]
-plot(res@permP[,1],res@permP[,2],col="#F2AD00",bg="#F98400",pch=21,main="Alpha .05",asp=1)
-
-curve(exp(-Falpha5)/x,ylim=c(0,1),from=0.00001,to=1,add=TRUE,col="red",lwd=2)
-abline(v=.05,col="green",lwd=2)
-abline(h=.05,col="blue",lwd=2)
-legend("topright",legend=c("H0(x,y) (Fisher)","H0(x)","H0(y)"),col=c("red","green","blue"),bty="n",lwd=2)
+res.fisher <- npc(res, "Fisher", flipReturn = list(permP = TRUE, permT = TRUE))
+Falpha5 <- res.fisher@permT[which.min(abs(res.fisher@permP - .05))]
+plot(res@permP[,1], res@permP[,2], col = "#F2AD00", bg = "#F98400", pch = 21,
+     main = "Alpha .05", asp = 1)
+curve(exp(-Falpha5)/x, ylim = c(0,1), from = 0.00001, to = 1, add = TRUE, col = "red", lwd = 2)
+abline(v = .05, col = "green", lwd = 2)
+abline(h = .05, col = "blue", lwd = 2)
+legend("topright", legend = c("H0(x,y) (Fisher)", "H0(x)", "H0(y)"),
+       col = c("red", "green", "blue"), bty = "n", lwd = 2)
 ```
-
 
 ### Tippett (min-p) Combining Function
-We inspect the rejection regions of the two univariate tests and the one of Fisher combination.  
-The intersection of each univariate test with the Fisher region defines the rejection region of a closed testing - i.e. adjusted for multiple testing.
-This fall to be the same rejection region given by Wesfall \& Young. Indeed, it is a closed testing with shortcut.
 
+Examine rejection regions for univariate tests and Tippett combination. Intersection defines closed testing rejection region. This coincides with Westfall & Young shortcut.
 
 ```{r,echo=FALSE}
-res.tippett=npc(res,"Tippett",flipReturn=list(permP=TRUE,permT=TRUE))
-Falpha5=-res.tippett@permT[which.min(abs(res.tippett@permP-.05))]
-plot(res@permP[,1],res@permP[,2],col="#F2AD00",bg="#F98400",pch=21,main="Alpha .05",asp=1)
-
-lines(c(Falpha5,Falpha5),c(Falpha5,1),col="red",lwd=2)
-lines(c(Falpha5,1),c(Falpha5,Falpha5),col="red",lwd=2)
-abline(v=.05,col="green",lwd=2)
-abline(h=.05,col="blue",lwd=2)
-legend("topright",legend=c("H0(x,y) (Tippett)","H0(x)","H0(y)"),col=c("red","green","blue"),bty="n",lwd=2)
+res.tippett <- npc(res, "Tippett", flipReturn = list(permP = TRUE, permT = TRUE))
+Falpha5 <- -res.tippett@permT[which.min(abs(res.tippett@permP - .05))]
+plot(res@permP[,1], res@permP[,2], col = "#F2AD00", bg = "#F98400", pch = 21,
+     main = "Alpha .05", asp = 1)
+lines(c(Falpha5, Falpha5), c(Falpha5, 1), col = "red", lwd = 2)
+lines(c(Falpha5, 1), c(Falpha5, Falpha5), col = "red", lwd = 2)
+abline(v = .05, col = "green", lwd = 2)
+abline(h = .05, col = "blue", lwd = 2)
+legend("topright", legend = c("H0(x,y) (Tippett)", "H0(x)", "H0(y)"),
+       col = c("red", "green", "blue"), bty = "n", lwd = 2)
 ```
 
-# FWER control via Permutations tests
+# FWER Control via Permutation Tests
 
 ## Permutation Bonferroni
 
-Bonferroni is conservative  
+Bonferroni is conservative:
 
-- **Bonferroni bound**  
-    Reject for p-values at most $\alpha/m$  
-- **By Boole's inequality**  
-    Guaranteed: FWER $\leq \alpha$, but often FWER $<\alpha$  
-- **Can we improve?**  
-    Reject for p-values at most $\tilde\alpha > \alpha/m$, while keeping FWER control  
-- **Yes we can**  
-    By permutations
+- **Bonferroni bound**: Reject if p-value $\leq \alpha/m$
+- **By Boole's inequality**: Guaranteed FWER $\leq \alpha$, but often FWER $< \alpha$
+ - **Can we improve?**: Reject if p-value $\leq \tilde{\alpha} > \alpha/m$ while maintaining FWER control
+ - **Yes**: Via permutations
+                                                                              
+
 
 ## Improved Bonferroni
-- **Reduced $\alpha$**  
-     Reject $H_i$ if $p_i \leq \tilde\alpha$
-- **Control of FWER?**
 
-\[
-\begin{aligned}
-\mathrm{FWER} &= \mathrm{P} \big(\textrm{$p_i \leq \tilde\alpha$ for at least one $i$ with $H_i$ true} \big) \\
-    &= \mathrm{P} \Big( \bigcup_{i\in T} \{p_i \leq \tilde\alpha\} \Big) \\
-    &= \mathrm{P} \Big( \min_{i \in T} p_i \leq \tilde\alpha \Big) \leq \alpha
-\end{aligned}
-\]
+- **Reduced $\alpha$**: Reject $H_i$ if $p_i \leq \tilde{\alpha}$
+ - **FWER control?**:
+                                                                                   \[
+   \begin{aligned}
+   \text{FWER} &= P(\text{$p_i \leq \tilde{\alpha}$ for at least one true $H_i$}) \\
+   &= P\left( \bigcup_{i \in T} \{p_i \leq \tilde{\alpha}\} \right) \\
+   &= P\left( \min_{i \in T} p_i \leq \tilde{\alpha} \right) \leq \alpha
+   \end{aligned}
+ \]
 
-- **How can we determine the value of $\tilde \alpha$?**  
-    Using permutations to find the distribution of the minimum p-value
+- **How to determine $\tilde{\alpha}$?**: Use permutations to find minimum p-value distribution
+ 
+## Multiple Testing via Permutations
+ 
+**Single-step min-P method**:  
 
-## Multiple testing using permutations
-**The single step min-P method**  
-
-- Calculate the smallest p-value $m$ for the real data  
-- Randomly permute the data  
-- Calculate new p-values for all tests based on permuted data  
-- Calculate the smallest p-value $m^\pi$ for permuted data  
-- Repeat permutation many (say k=1000) times: $m^\pi_1, \ldots, m^\pi_k$  
-- Calculate $\tilde\alpha$ as the $\alpha$-quantile of $m^\pi_1, \ldots, m^\pi_k$
-
-
-**Multiple testing result**  
-    Reject all hypotheses with (non-permuted) p-values at most $\tilde\alpha$
+1. Calculate smallest p-value $m$ for real data  
+2. Randomly permute data  
+3. Calculate new p-values for all tests on permuted data  
+4. Calculate smallest p-value $m^\pi$ for permuted data  
+5. Repeat permutations many times (e.g., k = 1000): $m^\pi_1, \ldots, m^\pi_k$  
+6. Calculate $\tilde{\alpha}$ as $\alpha$-quantile of $m^\pi_1, \ldots, m^\pi_k$
 
 
-## Correlation structure of p-values
+**Multiple testing result**: Reject all hypotheses with (non-permuted) p-values $\leq \tilde{\alpha}$
 
-**Permutation**  
-- Destroys correlation between covariates and response  
-- Retains correlation among covariates
+## P-value Correlation Structure
 
-**Consequence**  
-- P-values of correlated tests (i.e. data) remain correlated in permutations  
-- Distribution of minimum p-value correctly takes correlations into account  
+**Permutation**:  
 
-<!-- ---- -->
+- Destroys covariate-response correlation  
+- Preserves covariate correlations  
 
-**When the gain relative to Bonferroni is the gain large?**  
+**Consequence**:    
+
+- P-values of correlated tests remain correlated in permutations  
+- Minimum p-value distribution correctly accounts for correlations 
+
+**When is improvement over Bonferroni large?**:  
+
 - Negatively correlated p-values: typically no gain  
 - Independent p-values: minimal gain  
-- Positively correlated p-values: gain can be large
+- Positively correlated p-values: potentially large gain
 
-## Improved Holm: Westfall \&\ Young
-
+## Improved Holm: Westfall & Young
+ 
 *Westfall PH, Young SS (1993) Resampling-Based Multiple Testing: Examples and Methods for p-Value Adjustment. Wiley*
+ **Sequential permutation multiple testing**:
 
-**Sequential permutation multiple testing**
+- **Single-step**: Permutation equivalent of Bonferroni  
 
-- **Single step**  
-    Single step min-P is permutation equivalent of Bonferroni  
-- **What about Holm?**  
-    Permutation equivalent of Holm's method: Westfall \&\ Young
+- **Holm equivalent**: Westfall & Young method      
+ **min-P algorithm**:
+ 1. Start with all hypotheses                                                        2. Repeat:
+ - Perform single-step min-P to calculate $\tilde{\alpha}$
+ - Reject hypotheses with p-value $\leq \tilde{\alpha}$
+ - Remove rejected hypotheses  
+3. Until no new rejections
 
+## General Framework: Closed Testing
 
-<!-- ---- -->
+*Marcus R, Peritz E, Gabriel KR (1976). On closed testing procedures with special reference to ordered analysis of variance. Biometrika 63: 655-660.*
 
-**The min-P algorithm**  
+Test each node with any multivariate permutation test.
 
-* Start with all hypotheses
-*  Repeat  
-    - Do single step min-P to calculate $\tilde\alpha$  
-    - Reject hypotheses with p-value $\leq \tilde\alpha$  
-    - Remove rejected hypotheses  
-* Until no new rejections occur
-
-
-
-## The general framework: Closed Testing
-
-*R Marcus, E Peritz, KR Gabriel (1976). On closed testing procedures with special reference to ordered analysis of variance. Biometrika 63: 655-660.*
-
-Test in each node: any multivariate permutation test
-
-Westfall \&\ Young is a special case of closed testing (i.e. each node of the closure set uses min-p/Tippett or max-T combining function)
+Westfall & Young is a special case of closed testing (each node uses min-p/Tippett or max-T combining function).
 
 ### Closure Set
-
 
 ```{r, echo=FALSE}
 knitr::include_graphics("./figs/closed_set.PNG")
 ```
 
-<!-- ```{r,engine='tikz',fig.ext='svg',fig.width=3,echo=FALSE} -->
-<!-- \begin{center} -->
-<!-- \begin{tikzpicture}[scale=2.5] -->
-<!-- \draw[] -->
-<!-- (0,4) node[draw, line width=1pt] {ABC} -->
-<!-- (-1.5,2) node[draw, line width=1pt] {AB} -->
-<!-- (0,2) node[draw, line width=1pt] {AC} -->
-<!-- (1.5,2) node[draw, line width=1pt] {BC} -->
-<!-- (-2,0) node[draw, line width=1pt] {A} -->
-<!-- (0,0) node[draw, line width=1pt] {B} -->
-<!-- (2,0) node[draw, line width=1pt] {C}; -->
-<!-- \end{tikzpicture} -->
-<!-- \end{center} -->
-<!-- ``` -->
-
-Adjusted $\tilde p_A=\max(p_A,p_{AB},p_{AC},p_{ABC})$
+Adjusted $\tilde{p}_A = \max(p_A, p_{AB}, p_{AC}, p_{ABC})$
 
 In our data:
+
 ```{r}
-(res=flip.adjust(res,method = "Fisher"))
-
-(res=flip.adjust(res,method = "maxT"))
-
+(res <- flip.adjust(res, method = "Fisher"))
+(res <- flip.adjust(res, method = "maxT"))
 ```
 
-## Conclusion
+Conclusion
 
-**Accounting for dependencies**
+**Accounting for dependencies**: Adjusted p-values become lower (more rejections).
 
-Adjusted p-value become lower (i.e. more rejections)
+**When?**:
 
-**When?**  
 - Negative correlation: generally no gain  
-p-value Independents: little or no gain  
-- Positive correlation: big gain, usually   
-(NB: a test with bi-directional alternative and with negative correlation produce p-value positively correlated)
+- Independent p-values: little or no gain  
+- Positive correlation: substantial gain (note: two-sided tests with negatively correlated test statistics yield positively correlated p-values)
+  
+**Real data**: Often correlated variables → permutations advantageous
 
-**Real data**  
-The variables of real data sets are often correlated  
-then permutations are (often) convenient
+**How?**: `R: library(flip); flip(); flip.adjust()`
 
-**How?** `R: library(flip); flip(); flip.adjust()`
-
-<!-- ### Summary -->
-
-<!-- **FamilyWise Error** -->
-
-<!-- - Generalize the Type I error to the case of multiple hypotheses   -->
-<!-- - Control the probability of at LEAST a false rejections   -->
-<!-- - corrects the p-value (adjusted p-value always equal to or greater than the unadjusted p-value) -->
-
-
-# A case study: Pharmacokinetic Study of Carbidopa 
+# Case Study: Pharmacokinetic Study of Carbidopa
 
 Description:  
-<http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/part2-table6.html>
+ <http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/part2-table6.html>
 
-As part of a pharmacokinetic study, 12 healthy male subjects were allocated randomly to a three period crossover design receiving one of three graded doses (25, 50, 100 mg) of Carbidopa q8h in each treatment period. A seven day washout period separated the treatment periods. The pharmacokinetic variables AUC, Cmax, and Tmax were calculated for each subject from plasma concentrations assayed from blood samples taken at 0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, and 8 hours postdosing following the second dose of carbidopa on the sixth day of each treatment period.
+  12 healthy male subjects in three-period crossover design receiving three graded doses (25, 50, 100 mg) of Carbidopa q8h. Seven-day washout between periods. Pharmacokinetic variables AUC, Cmax, Tmax calculated from plasma concentrations at 0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8 hours postdosing after second dose on day 6.
 
+Dataset:  
+ <http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/Bradp2t6.txt>
 
-dataset:  
-<http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/Bradp2t6.txt>
-
-
-Analyze the dataset without taking in account the Study Periods (which have been randomized in each subject, hence we can avoid to account for it in the analysis).
+  Analyze without accounting for study periods (randomized within subjects).
 
 Research questions:
+ 1. Is there a dose response for AUC, Cmax, or Tmax? Overall?
+ 2. Can dose proportionality be established? (Fit linear model for each endpoint, discuss results)
+ 
+## Solution
 
-- Is there a dose response for AUC, Cmax, or Tmax? Overall?
-- Can dose proportionality be established? (try to fit a linear model for each endpoint, then discuss the results)
-
-
-## A solution
-
-
-We answer to both first and second question with a single analysis: we perform a linear model (accounting for individual variability) on log transformed end-points.
-
+Address both questions with single analysis: linear model (accounting for individual variability) on log-transformed endpoints.
 
 ```{r}
-#Reading and make-up of the data
-
-dati=read.table("http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/Bradp2t6.txt",skip = 1,header = TRUE)
-
-dati=cbind(dati[,1],matrix(as.matrix(dati[,-1]),nrow(dati)*3,4))
-colnames(dati)=c("Sub","Dose","AUC","Cmax","Tmax")
-
-dati=as.data.frame(dati)
-str(dati)
-
-# transform all responses with log-transformed, 
-# so that a linear relationship between time and end-point indicates proportionality 
-dati[,3:5]=log(dati[,3:5])
+ # Read and prepare data
+ dati <- read.table("http://webserv.jcu.edu/math//faculty/TShort/Bradstreet/part2/Bradp2t6.txt",
+                  skip = 1, header = TRUE)
+ dati <- cbind(dati[,1], matrix(as.matrix(dati[,-1]), nrow(dati)*3, 4))
+ colnames(dati) <- c("Sub", "Dose", "AUC", "Cmax", "Tmax")
+ dati <- as.data.frame(dati)
+ str(dati)
+ 
+ # Log-transform responses (linear relationship indicates proportionality)
+ dati[,3:5] <- log(dati[,3:5])
 ```
-
-
 
 ```{r}
-#Descriptives and plots:
-summary(dati[,-1])
-by(dati[,3:5],dati$Dose,summary)
-
-par(mfrow=c(2,2))
-plot(dati$Dose,dati$AUC,ylab="log(AUC)",xlab="Dose",main="Dose vs log(AUC)")
-
-r=sapply(unique(dati$Sub),function(s){
-  d=subset(dati,Sub==s)
-  d=d[order(d$Dose),]
-  lines(d$Dose,(d$AUC),col=s,lwd=2)})
-
-
-plot(dati$Dose,dati$Cmax,ylab="log(Cmax)",xlab="Dose",main="Dose vs log(Cmax)")
-r=sapply(unique(dati$Sub),function(s){
-  d=subset(dati,Sub==s)
-  d=d[order(d$Dose),]
-  lines(d$Dose,(d$Cmax),col=s,lwd=2)})
-
-
-plot(dati$Dose,dati$Tmax,ylab="log(Tmax)",xlab="Dose",main="Dose vs log(Tmax)")
-r=sapply(unique(dati$Sub),function(s){
-  d=subset(dati,Sub==s)
-  d=d[order(d$Dose),]
-  lines(d$Dose,(d$Tmax),col=s,lwd=2)})
-
+ # Descriptives and plots
+ summary(dati[,-1])
+ by(dati[,3:5], dati$Dose, summary)
+ 
+ par(mfrow = c(2,2))
+ plot(dati$Dose, dati$AUC, ylab = "log(AUC)", xlab = "Dose", main = "Dose vs log(AUC)")
+ temp=sapply(unique(dati$Sub), function(s) {
+ d <- subset(dati, Sub == s)
+ d <- d[order(d$Dose),]
+ lines(d$Dose, d$AUC, col = s, lwd = 2)
+ })
+ 
+ plot(dati$Dose, dati$Cmax, ylab = "log(Cmax)", xlab = "Dose", main = "Dose vs log(Cmax)")
+ temp=sapply(unique(dati$Sub), function(s) {
+ d <- subset(dati, Sub == s)
+ d <- d[order(d$Dose),]
+ lines(d$Dose, d$Cmax, col = s, lwd = 2)
+})
+ 
+ plot(dati$Dose, dati$Tmax, ylab = "log(Tmax)", xlab = "Dose", main = "Dose vs log(Tmax)")
+ temp=sapply(unique(dati$Sub), function(s) {
+ d <- subset(dati, Sub == s)
+ d <- d[order(d$Dose),]
+ lines(d$Dose, d$Tmax, col = s, lwd = 2)
+ })
 ```
 
-
-Now the analysis: A simple solution could be:
+Simple solution:
 
 ```{r}
-library(flip)
-res=flip(.~Dose,data=dati,Strata=~Sub,statTest = "coeff")
-summary(res)
-#here we ask for statTest = "coeff", i.e. estimated coefficient of a linear model
-hist(res)
+ library(flip)
+ res <- flip(. ~ Dose, data = dati, Strata = ~Sub, statTest = "coeff")
+ summary(res)
+ # statTest = "coeff": estimated linear model coefficient
+ hist(res)
 ```
-
 
 Multivariate:
-
-- Overall
-
-```{r}
-res=flip.adjust(res)
-npc(res,"Fisher")
-```
-
-There is an effect of `Dose`, overall.
-
-
-- By end-points (closed testing with max-t combining function). 
-Try also different methods (e.g. `method="Fisher"`) and compare the results of `method="minP"` with the one of `method="Holm"`. 
+ - Overall
 
 ```{r}
-res=flip.adjust(res,method="holm")
-res=flip.adjust(res,method="Fisher")
-summary(res)
+ res <- flip.adjust(res)
+ npc(res, "Fisher")
 ```
 
-`AUC` and `Cmax` show a significant effect after correction for multiplicity, while `Tmax` does not.
+Dose effect exists overall.
 
+- By endpoint (closed testing with max-t). Try different methods (e.g., `method = "Fisher"`) and compare `method = "minP"` with `method = "Holm"`.
 
+```{r}
+ res <- flip.adjust(res, method = "holm")
+ res <- flip.adjust(res, method = "Fisher")
+ summary(res)
+```
+ 
+`AUC` and `Cmax` show significant effects after multiplicity correction; `Tmax` does not.
 
-# (minimal) Bibliography
+# Minimal Bibliography
+ 
+**Grounding Theory**:  
+ - Pesarin (2001) *Multivariate Permutation Tests: With Applications in Biostatistics*. Wiley, New York
 
-The Grounding Theory:  
-- Pesarin (2001) Multivariate Permutation Tests: With Applications in Biostatistics by Fortunato, Wiley, New York
+**Alternative permutation testing approach**:  
+ - Hemerik J, Goeman J. Exact testing with random permutations. Test. 2018;27(4):811-825. doi:10.1007/s11749-017-0571-1
 
-An alternative approach to the Permutation testing:  
-- Hemerik J, Goeman J. Exact testing with random permutations. Test (Madr). 2018;27(4):811-825. doi: 10.1007/s11749-017-0571-1. Epub 2017 Nov 30. PMID: 30930620; PMCID: PMC6405018.  
-
-
-A flexible approach to General Linear Model based on the sign-flip score test:  
-- Hemerik, Goeman and Finos (2020) Robust testing in generalized linear models by sign flipping score contributions. Journal of the Royal Statistical Society Series B (Statistical Methodology) 82(3). DOI: 10.1111/rssb.12369  
-Implemented in R package flipscores:  
-<https://cran.r-project.org/web/packages/flipscores/index.html>  
-better to use the github develop version:  
-<https://github.com/livioivil/flipscores>
-
-
-A nice review of the regression model within the permutation framework:   
-- Anderson M. Winkler, Gerard R. Ridgway, Matthew A. Webster, Stephen M. Smith, Thomas E. Nichols (2014)
-Permutation inference for the general linear model, NeuroImage, Volume 92, Pages 381-397, ISSN 1053-8119 <https://doi.org/10.1016/j.neuroimage.2014.01.060>
+**Flexible GLM approach via sign-flip score test**:  
+ - Hemerik, Goeman and Finos (2020) Robust testing in generalized linear models by sign flipping score contributions. *Journal of the Royal Statistical Society Series B* 82(3). DOI: 10.1111/rssb.12369  
+ Implemented in R package `flipscores`:  
+ <https://cran.r-project.org/web/packages/flipscores/index.html>  
+ Development version: <https://github.com/livioivil/flipscores>
+ 
+**Permutation regression review**:  
+ - Winkler AM, Ridgway GR, Webster MA, Smith SM, Nichols TE (2014) Permutation inference for the general linear model. *NeuroImage* 92:381-397. doi:10.1016/j.neuroimage.2014.01.060
+ 

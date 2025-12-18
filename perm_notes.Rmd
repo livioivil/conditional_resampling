@@ -100,7 +100,7 @@ plot.ecdf(p.values);plot.ecdf(p.values_param,add=TRUE,col=3);abline(0,1,col=2)
 
 ## An alternative approach
 
-It generalizes the repeated measures approach to ubalanced designs. it is more model-based, it is less robust.
+It generalizes the repeated measures approach to unbalanced designs. it is more model-based, it is less robust.
 
 
 - Kherad-Pajouh, S., & Renaud, O. (2015). A general permutation approach
