@@ -487,19 +487,19 @@ evidence for \(H_1\) than \(\hat{\beta}_1 ^{obs}\)
 
 \subsubsection{P-value Calculation}\label{p-value-calculation}
 
-Out of B = 5000 permutations, we obtained 4921 cases where
+Out of B = 5000 permutations, we obtained 4915 cases where
 \(\hat{\beta}_1 ^{*b} \leq \hat{\beta}_1 ^{obs}\).
 
 The p-value (significance) is:
 \(p = \frac{\#(\hat{\beta}_1 ^{*b} \geq \hat{\beta}_1 ^{obs})}{B} =\)
-0.0162
+0.0174
 
 (\(\hat{\beta}_1 ^{obs}\) counts as one random permutation)
 
 \subsubsection{Interpretation}\label{interpretation}
 
 The probability \(P(\hat{\beta}_1^* \geq \hat{\beta}_1 =\) 0.206
-\(| H_0) = p =\) 0.0162 is very small. It was unlikely to obtain such a
+\(| H_0) = p =\) 0.0174 is very small. It was unlikely to obtain such a
 value \textbf{if \(H_0\) is true}.
 
 The Neyman-Pearson approach established significance thresholds like
@@ -557,7 +557,7 @@ correlations with probability \(\alpha\) (e.g., \(0.05 = 5\%\)).
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633    >  0.0150
+## Reaction.Time    t 2.633    >  0.0240
 \end{verbatim}
 
 \begin{Shaded}
@@ -599,7 +599,7 @@ anomalous (`far from 0').
 
 P-value:
 \(p = \frac{\#(|\hat{\beta}_1^{*b}| \geq |\hat{\beta}_1^{obs}|)}{B} =\)
-0.0326
+0.035
 
 (Note: observed test statistic included among permutations)
 
@@ -615,7 +615,7 @@ In \texttt{flip}:
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633   ><  0.0374
+## Reaction.Time    t 2.633   ><  0.0314
 \end{verbatim}
 
 \begin{Shaded}
@@ -759,10 +759,11 @@ control}: \(P(\text{p-value} \leq \alpha | H_0) = \alpha\), assuming
 step function). For other \(\alpha\) values, tests are slightly
 conservative (or require randomized tests, not discussed here).
 
-Additional properties: - \textbf{Unbiased}:
-\(P(\text{p-value} \leq \alpha | H_1) > \alpha\) - \textbf{Consistent}:
-\(P(\text{p-value} \leq \alpha | H_1) \to 1\) as \(n \to \infty\) -
-Converges to parametric counterpart when it exists
+Additional properties:\\
+- \textbf{Unbiased}: \(P(\text{p-value} \leq \alpha | H_1) > \alpha\)\\
+- \textbf{Consistent}: \(P(\text{p-value} \leq \alpha | H_1) \to 1\) as
+\(n \to \infty\)\\
+- Converges to parametric counterpart when it exists.
 
 \subsubsection{Estimated p-values}\label{estimated-p-values}
 
@@ -1417,26 +1418,59 @@ Alternative model (more on NPC later):
 ## V1     Fisher    2 3.671  0.1406
 \end{verbatim}
 
-\section{Paired samples}\label{paired-samples}
+\section{Paired samples and symmetry
+testing}\label{paired-samples-and-symmetry-testing}
 
-Understanding the Model: \(Y=\gamma_0+\gamma_1 Z+\beta X+\varepsilon\)
+\subsection{Definition}\label{definition}
 
-Consider the model: - \(Z\) represents Subject ID (\(i=1,\ldots,n\)) -
-\(X\) indicates pre/post-treatment status (typically coded as 0 for
-pre-treatment, 1 for post-treatment) - Each subject in \(Z\) has one
-pre-treatment and one post-treatment observation
+Let be \(y\) the outcome, \(x\) the condition/treatment
+(\(x\in \{1="Pre-treatment",2="Post-treatment"\}\); each level --
+e.g.~subject -- in \(Z\) has one Pre-treatment and one Post-treatment
+observation. Let be \(z=\) \texttt{Subject} the nuisance factor
+(Discrete Nuisances), see also Section \emph{Stratified Permutations
+(Discrete Nuisances)}.
 
-The null hypothesis to test is \(H_0: \beta=0\).
+Under the null hypothesis: \(f(y|x=1,z)=f(y|x=2,z)=f(y|z)\)\\
+while possibly (even under \(H_0\))
+\(\exists (z,z'): f(y|x,z) \neq f(y|x',z')\)
 
-When permutations are constrained within levels of \(Z\) (within each
-subject), this becomes equivalent to flipping the sign of the difference
-between post- and pre-treatment measurements.
+In the gaussian-parametric approach we assume a different mean for each
+subject (i.e.~Subject-specific effect), but the variance is forced to be
+constant among subjects. Here we don't make this assumption. This is
+much more realistic (see discussion later).
 
-Let \(D\) be the vector of these differences with \(n\) observations.
-The null hypothesis can be rewritten as \(H_0: E(D)=0\).
+\subsection{Testing Symmetry}\label{testing-symmetry}
 
-\subsection{Advantages of this
-approach}\label{advantages-of-this-approach}
+The test statistic is based on the mean difference
+\(T(y)=\sum_{i=1}^n (y_{i2}-y_{i1})/n=\sum_{i=1}^n d_{i}/n\)
+
+Since \(f(y_{i1})=f(y|x=1,z=i)=f(y|x=2,z=i)=f(y_{i2})\), \(d_{i}\) is
+symmetric by definition.
+
+Therefore, the null hypothesis is equivalentely written as:
+
+\[
+\begin{aligned}
+H_0:&\ f(y_i|x_i=1,z_i)=f(y_i|x_i=2,z_i) \ \forall z_i \\
+\implies & f(d_i)=f(-d_i)\ \forall z_i
+\end{aligned}
+\]
+
+Permutantion within the observation \(i\) reduces to randomly flipping
+the sign of \(d_i\). We test for symmetry.
+
+\textbf{REMARK} The opposite implication is not always true:
+\(f(d_i)=f(-d_i) \nRightarrow f(y_i|x_i=1,z_i)=f(y_i|x_i=2,z_i) \ \forall z_i\);
+consider the important example of \(y_i\sim N(0,\Sigma(x_i,z_i))\)
+(i.e.~the variance depends on the levels of \(x_i\) and the subject
+\(z_i\)). In this case
+\((y_i|x_i=1,z_i)-(y_i|x_i=2,z_i)\sim N(0,\Sigma(x_i=1,z_i)+\Sigma(x_i=2,z_i))\)
+is still (normal and therefore) symmetric! Therefore the assumption of
+symmetry of the difference is broader than the assumption of
+exchangeability of observations within the same subject.
+
+\subsection{Advantages of sign-flip (and permutation)
+approach}\label{advantages-of-sign-flip-and-permutation-approach}
 
 One major advantage is that we don't need to estimate the Fisher
 Information (i.e., the residual variance). Let's demonstrate this with a
@@ -2203,9 +2237,13 @@ in Biostatistics}. Wiley, New York
 2018;27(4):811-825. \url{doi:10.1007/s11749-017-0571-1}
 
 \textbf{Flexible GLM approach via sign-flip score test}:\\
-- Hemerik, Goeman and Finos (2020) Robust testing in generalized linear
-models by sign flipping score contributions. \emph{Journal of the Royal
-Statistical Society Series B} 82(3). DOI: 10.1111/rssb.12369\\
+- De Santis, Goeman, Hemerik, Davenport, Finos (2025) Inference in
+generalized linear models with robustness to misspecified variances.
+Journal of the American Statistical Association, 1-10. - Hemerik, Goeman
+and Finos (2020) Robust testing in generalized linear models by sign
+flipping score contributions. \emph{Journal of the Royal Statistical
+Society Series B} 82(3). DOI: 10.1111/rssb.12369
+
 Implemented in R package \texttt{flipscores}:\\
 \url{https://cran.r-project.org/web/packages/flipscores/index.html}\strut \\
 Development version: \url{https://github.com/livioivil/flipscores}
