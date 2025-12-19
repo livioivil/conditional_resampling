@@ -314,15 +314,16 @@ True hypothesis is $H_0$ (no correlation), but we accept $H_1$ (positive correla
 - Type II error: False Negative  
 True hypothesis is $H_1$ (positive correlation), but we fail to reject $H_0$ (no correlation)
 
-## Summary
+### Summary
 
 **p-value**: Proportion of experiments providing equal or stronger evidence against $H_0$ compared to observed data.
 
-To compute it, we need:
-- **Orbit $\mathcal{O}$**
-- **Test statistic** ($T: \mathbb{R}^n \to \mathbb{R}$) quantifying evidence against $H_0$
-  - Higher values indicate stronger evidence against $H_0$
-  - Computing $T$ for each $\mathcal{O}$ element induces an ordering on $\mathcal{O}$
+To compute it, we need:  
+
+- **Orbit $\mathcal{O}$**  
+- **Test statistic** ($T: \mathbb{R}^n \to \mathbb{R}$) quantifying evidence against $H_0$   
+    * Higher values indicate stronger evidence against $H_0$  
+    * Computing $T$ for each $\mathcal{O}$ element induces an ordering on $\mathcal{O}$  
 
 In our example: $T = \hat{\beta}_1 = \hat{\sigma}_{xy}/\hat{\sigma}_{xx}$ (estimated slope). Higher slope indicates stronger evidence for $H_1$.
 
@@ -334,7 +335,7 @@ $P(\text{p-value} \leq \alpha | H_0) \leq \alpha$
 
 This ensures that over many experiment replications, we find false correlations with probability $\alpha$ (e.g., $0.05 = 5\%$).
 
-### Implementation in `flip`
+#### Implementation in `flip`
 
 ```{r}
 library(flip)
@@ -383,17 +384,20 @@ plot(res)
 
 ## A More Formal Approach
 
-(See also Pesarin, 2001; [Hemerik & Goeman, 2018](https://link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf))
+(See also Pesarin, 2001; Hemerik & Goeman, 2018)
 
-Let $Y$ be data in sample space $\mathcal{Y}$. Let $\Pi$ be a (usually finite) set of transformations $\pi: \mathcal{Y} \to \mathcal{Y}$ forming a **group** under composition:
-- Contains identity
-- Every element has an inverse
+Let $Y$ be data in sample space $\mathcal{Y}$. Let $\Pi$ be a (usually finite) set of transformations $\pi: \mathcal{Y} \to \mathcal{Y}$ forming a **group** under composition:  
+- Contains identity  
+- Every element has an inverse  
 - Closed: if $\pi_1, \pi_2 \in \Pi$, then $\pi_1 \circ \pi_2 \in \Pi$
 
 (e.g., $\Pi$ = all possible permutations)
 
 **Null Hypothesis**  
 $H_0: Y \sim P \in \Omega_0$
+
+In the case of testing for dependence between $y$ and $x$, under the null hypothesis: $f(y|x)=f(y)$.  
+
 
 **Randomization Hypothesis** Under $H_0$, the distribution of $Y$ is invariant under $\Pi$: for every $\pi \in \Pi$, $\pi Y$ and $Y$ have the same distribution when $Y \sim P \in \Omega_0$.
 
@@ -484,8 +488,8 @@ $E(\phi(\mathbf{y})) = \int_P E(\phi(\mathbf{y})|\mathbf{y} \in \mathcal{O}, H_0
 
 #### Independence vs exchangeability 
 
-Always true if observations:  
-- Are **identically distributed**
+Always true if observations:   
+- Are **identically distributed**  
 - Have **same dependence** (e.g., same correlation)
 
 Parametric $t$-tests and linear models assume independence (stricter than 'same dependence') and normality of errors—more stringent than permutation approach.
@@ -497,9 +501,9 @@ When normality fails, parametric approaches only provide asymptotic Type I error
 The theorem proves permutation tests have **exact Type I error control**: $P(\text{p-value} \leq \alpha | H_0) = \alpha$, assuming $\alpha \in \{1/|\mathcal{O}|, 2/|\mathcal{O}|, \ldots, 1\}$ (since $\mathcal{O}$ is finite and $T(\pi \mathbf{y})$ distribution is a step function). For other $\alpha$ values, tests are slightly conservative (or require randomized tests, not discussed here).
 
 Additional properties:   
-- **Unbiased**: $P(\text{p-value} \leq \alpha | H_1) > \alpha$  
+- **Unbiased**: $P(\text{p-value} \leq \alpha | H_1) > \alpha$   
 - **Consistent**: $P(\text{p-value} \leq \alpha | H_1) \to 1$ as $n \to \infty$  
-- Converges to parametric counterpart when it exists.
+- Converges to parametric counterpart when it exists. 
 
 
 ### Estimated p-values
@@ -525,7 +529,7 @@ curve(dnorm(x, mean(beta.perm), sd(beta.perm)), add = TRUE, col = 1, lwd = 3)
 points(beta1, 0, lwd = 3, col = 1)
 ```
 
-### Simple Linear Parametric Model
+**Simple Linear Parametric Model**
 
 Assume observed values distribute around true values $\beta_0 + \beta_1 X$ according to a Gaussian distribution:
 
@@ -537,7 +541,7 @@ $Y = \beta_0 + \beta_1 X + \varepsilon$
 - $y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$ (true linear relationship plus error)
 - $\varepsilon_i \sim N(0, \sigma^2)$ for all $i = 1, \ldots, n$ (normal errors with zero mean and constant variance/homoscedasticity)
 
-### Hypothesis Testing
+**Hypothesis Testing**
 
 If assumptions hold:
 
@@ -558,9 +562,7 @@ summary(model)
 
 Similar result, but with many more assumptions!
 
-### Permutation Test Assumptions
-
-What model do permutation tests assume?
+**Permutation Test Assumptions**
 
 Under $H_0$: $f(y) = f(y|x) \ \forall x$
 
@@ -571,6 +573,8 @@ i.e., $H_1: E(yx) \neq E(x)E(y)$
 No other assumptions about $f(y|x)$ distribution (normality, finite moments, etc.).
 
 ## Permutationally Equivalent Tests
+
+Different test statistics can produce the same p value. In this example, this is true for the t-statistic, the correlation, the covariance, and even the product $x'y$ (when the alternative hypothesis is one-sided). 
 
 ```{r}
 set.seed(1)

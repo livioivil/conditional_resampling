@@ -487,19 +487,19 @@ evidence for \(H_1\) than \(\hat{\beta}_1 ^{obs}\)
 
 \subsubsection{P-value Calculation}\label{p-value-calculation}
 
-Out of B = 5000 permutations, we obtained 4915 cases where
+Out of B = 5000 permutations, we obtained 4903 cases where
 \(\hat{\beta}_1 ^{*b} \leq \hat{\beta}_1 ^{obs}\).
 
 The p-value (significance) is:
 \(p = \frac{\#(\hat{\beta}_1 ^{*b} \geq \hat{\beta}_1 ^{obs})}{B} =\)
-0.0174
+0.0198
 
 (\(\hat{\beta}_1 ^{obs}\) counts as one random permutation)
 
 \subsubsection{Interpretation}\label{interpretation}
 
 The probability \(P(\hat{\beta}_1^* \geq \hat{\beta}_1 =\) 0.206
-\(| H_0) = p =\) 0.0174 is very small. It was unlikely to obtain such a
+\(| H_0) = p =\) 0.0198 is very small. It was unlikely to obtain such a
 value \textbf{if \(H_0\) is true}.
 
 The Neyman-Pearson approach established significance thresholds like
@@ -519,7 +519,7 @@ The Neyman-Pearson approach established significance thresholds like
   reject \(H_0\) (no correlation)
 \end{itemize}
 
-\subsection{Summary}\label{summary}
+\subsubsection{Summary}\label{summary}
 
 \textbf{p-value}: Proportion of experiments providing equal or stronger
 evidence against \(H_0\) compared to observed data.
@@ -544,7 +544,7 @@ probability of false discovery:
 This ensures that over many experiment replications, we find false
 correlations with probability \(\alpha\) (e.g., \(0.05 = 5\%\)).
 
-\subsubsection{\texorpdfstring{Implementation in
+\paragraph{\texorpdfstring{Implementation in
 \texttt{flip}}{Implementation in flip}}\label{implementation-in-flip}
 
 \begin{Shaded}
@@ -557,7 +557,7 @@ correlations with probability \(\alpha\) (e.g., \(0.05 = 5\%\)).
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633    >  0.0240
+## Reaction.Time    t 2.633    >  0.0250
 \end{verbatim}
 
 \begin{Shaded}
@@ -599,7 +599,7 @@ anomalous (`far from 0').
 
 P-value:
 \(p = \frac{\#(|\hat{\beta}_1^{*b}| \geq |\hat{\beta}_1^{obs}|)}{B} =\)
-0.035
+0.0366
 
 (Note: observed test statistic included among permutations)
 
@@ -615,7 +615,7 @@ In \texttt{flip}:
 \begin{verbatim}
 ## 
 ##               Test  Stat tail p-value
-## Reaction.Time    t 2.633   ><  0.0314
+## Reaction.Time    t 2.633   ><  0.0340
 \end{verbatim}
 
 \begin{Shaded}
@@ -628,20 +628,24 @@ In \texttt{flip}:
 
 \subsection{A More Formal Approach}\label{a-more-formal-approach}
 
-(See also Pesarin, 2001;
-\href{https://link.springer.com/content/pdf/10.1007/s11749-017-0571-1.pdf}{Hemerik
-\& Goeman, 2018})
+(See also Pesarin, 2001; Hemerik \& Goeman, 2018)
 
 Let \(Y\) be data in sample space \(\mathcal{Y}\). Let \(\Pi\) be a
 (usually finite) set of transformations
 \(\pi: \mathcal{Y} \to \mathcal{Y}\) forming a \textbf{group} under
-composition: - Contains identity - Every element has an inverse -
-Closed: if \(\pi_1, \pi_2 \in \Pi\), then \(\pi_1 \circ \pi_2 \in \Pi\)
+composition:\\
+- Contains identity\\
+- Every element has an inverse\\
+- Closed: if \(\pi_1, \pi_2 \in \Pi\), then
+\(\pi_1 \circ \pi_2 \in \Pi\)
 
 (e.g., \(\Pi\) = all possible permutations)
 
 \textbf{Null Hypothesis}\\
 \(H_0: Y \sim P \in \Omega_0\)
+
+In the case of testing for dependence between \(y\) and \(x\), under the
+null hypothesis: \(f(y|x)=f(y)\).
 
 \textbf{Randomization Hypothesis} Under \(H_0\), the distribution of
 \(Y\) is invariant under \(\Pi\): for every \(\pi \in \Pi\), \(\pi Y\)
@@ -739,8 +743,8 @@ Then:
 exchangeability}\label{independence-vs-exchangeability}
 
 Always true if observations:\\
-- Are \textbf{identically distributed} - Have \textbf{same dependence}
-(e.g., same correlation)
+- Are \textbf{identically distributed}\\
+- Have \textbf{same dependence} (e.g., same correlation)
 
 Parametric \(t\)-tests and linear models assume independence (stricter
 than `same dependence') and normality of errors---more stringent than
@@ -811,8 +815,7 @@ by a \textbf{Gaussian} curve.
 
 \begin{center}\includegraphics{perm_files/figure-latex/unnamed-chunk-18-1} \end{center}
 
-\subsubsection{Simple Linear Parametric
-Model}\label{simple-linear-parametric-model}
+\textbf{Simple Linear Parametric Model}
 
 Assume observed values distribute around true values
 \(\beta_0 + \beta_1 X\) according to a Gaussian distribution:
@@ -827,7 +830,7 @@ relationship plus error) - \(\varepsilon_i \sim N(0, \sigma^2)\) for all
 \(i = 1, \ldots, n\) (normal errors with zero mean and constant
 variance/homoscedasticity)
 
-\subsubsection{Hypothesis Testing}\label{hypothesis-testing}
+\textbf{Hypothesis Testing}
 
 If assumptions hold:
 
@@ -871,10 +874,7 @@ For \texttt{reaction} data with \(H_1: \beta_1 \neq 0\) (two-sided):
 
 Similar result, but with many more assumptions!
 
-\subsubsection{Permutation Test
-Assumptions}\label{permutation-test-assumptions}
-
-What model do permutation tests assume?
+\textbf{Permutation Test Assumptions}
 
 Under \(H_0\): \(f(y) = f(y|x) \ \forall x\)
 
@@ -888,6 +888,10 @@ moments, etc.).
 
 \subsection{Permutationally Equivalent
 Tests}\label{permutationally-equivalent-tests}
+
+Different test statistics can produce the same p value. In this example,
+this is true for the t-statistic, the correlation, the covariance, and
+even the product \(x'y\) (when the alternative hypothesis is one-sided).
 
 \begin{Shaded}
 \begin{Highlighting}[]
