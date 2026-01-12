@@ -92,7 +92,7 @@ plot(x = reaction$Age, y = reaction$Reaction.Time, pch = 20, col = 2, cex = 2)
 
 ## Measuring Dependence Between Two Variables
 
-Define:
+Define:   
 - $X = Age$  
 - $Y = Reaction.Time$
 
@@ -153,9 +153,9 @@ model <- lm(Reaction.Time ~ Age, data = reaction)
 ```
 
 Estimates:  
-- Slope: $\hat{\beta}_1 = \frac{\sigma_{xy}}{\sigma_{xx}} = \rho_{xy}\frac{\sigma_y}{\sigma_x} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2} =$ `r coefficients(model)[2]`  
-- Intercept: $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} =$ `r coefficients(model)[1]`
-- Estimated response: $\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i$
+- Slope: $\hat{\beta}_1 = \frac{\sigma_{xy}}{\sigma_{xx}} = \rho_{xy}\frac{\sigma_y}{\sigma_x} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2} =$ `r coefficients(model)[2]`   
+- Intercept: $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} =$ `r coefficients(model)[1]`  
+- Estimated response: $\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i$  
 - Residuals: $y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i) = y_i - \hat{y}_i$
 
 Sum of squared residuals: $\sum_{i=1}^n (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i)^2 = \sum_{i=1}^n (y_i - \hat{y}_i)^2$
@@ -290,8 +290,8 @@ points(beta1, 0, lwd = 3, col = 1)
 
 What was the probability of obtaining a value $\geq \hat{\beta}_1 ^{obs}$ among possible $\hat{\beta}_1 ^{*b}$ values (from permuted data)?
 
-Remarks:
-- $\hat{\beta}_1 ^{*b} < \hat{\beta}_1 ^{obs}$ (closer to 0): Less evidence against $H_1$ than $\hat{\beta}_1 ^{obs}$
+Remarks:   
+- $\hat{\beta}_1 ^{*b} < \hat{\beta}_1 ^{obs}$ (closer to 0): Less evidence against $H_1$ than $\hat{\beta}_1 ^{obs}$   
 - $\hat{\beta}_1 ^{*b} \geq \hat{\beta}_1 ^{obs}$: Equal or stronger evidence for $H_1$ than $\hat{\beta}_1 ^{obs}$
 
 ### P-value Calculation
@@ -386,9 +386,10 @@ plot(res)
 
 (See also Pesarin, 2001; Hemerik & Goeman, 2018)
 
-Let $Y$ be data in sample space $\mathcal{Y}$. Let $\Pi$ be a (usually finite) set of transformations $\pi: \mathcal{Y} \to \mathcal{Y}$ forming a **group** under composition:  
-- Contains identity  
-- Every element has an inverse  
+Let $Y$ be data in sample space $\mathcal{Y}$. Let $\Pi$ be a (usually finite) set of transformations $\pi: \mathcal{Y} \to \mathcal{Y}$ forming a **group** under composition:   
+
+- Contains identity   
+- Every element has an inverse   
 - Closed: if $\pi_1, \pi_2 \in \Pi$, then $\pi_1 \circ \pi_2 \in \Pi$
 
 (e.g., $\Pi$ = all possible permutations)
@@ -879,7 +880,25 @@ seeds
 
 ## Marginal vs Joint Distribution
 
-Use permutation methods to test for group differences (`grp`) on both `x` and `y`:
+We want to test the equality of the distribution of `x` among the two (values in) `grp`:
+
+$$H_{0x}:\ f(x|grp=0)=f(x|grp=1)$$ 
+vs 
+
+$$H_{1x}:\ f(x|grp=0)\neq f(x|grp=1)$$ 
+
+
+This is, of course, equivalent to $f(x|grp)=f(x)$. We can use the mean difference as a test statistic; this is usually done in a parametric setting where, under the assumptions of normality and homoscedasticity, the only difference between the two groups can be in the means.
+Conversely, within the permutation framework, the two samples can differ in any aspect of the distribution; adopting the difference in mean simply reflects our hope that this will produce a powerful test.
+
+
+We formulate an analogous null hypothesis for `y.
+
+$$H_{0y}:\ f(y|grp=0)=f(y|grp=1)$$ 
+vs 
+$$H_{1y}:\ f(y|grp=0)\neq f(y|grp=1)$$
+
+We use `flip` to test for group differences (`grp`) on both `x` and `y`:
 
 ```{r}
 library(flip)
@@ -888,14 +907,25 @@ hist(res)
 # flipReturn = list(permP = TRUE, permT = TRUE) not strictly needed; useful later
 ```
 
+
+
 We can test the two variables separately but lack an overall p-value (is there ANY difference?).
 
 ```{r}
 plot(res)
 ```
 
-Next we'll see:
-                                                         - How to combine p-values (e.g., Fisher's combining function) for global hypothesis testing
+Here we are interested in testing the joint null hypothesis
+
+$$H_{0}:\ H_{0x} \cap H_{0y}$$ 
+vs
+
+$$H_{1}:\ H_{1x} \cup H_{1y}$$ 
+
+
+
+Next we'll see:   
+- How to combine p-values (e.g., Fisher's combining function) for global hypothesis testing  
 - How to use closed testing procedures to adjust p-values: which variables differ?
 
 ## Rejection Regions (and Overall Testing)
